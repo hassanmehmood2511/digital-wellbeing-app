@@ -47,6 +47,11 @@ class BehtarBottomNavigationBar extends StatelessWidget {
               label: 'Progress',
             ),
             NavigationDestination(
+              icon: Icon(Icons.phonelink_lock_outlined),
+              selectedIcon: Icon(Icons.phonelink_lock_rounded),
+              label: 'Apps',
+            ),
+            NavigationDestination(
               icon: Icon(Icons.person_outline_rounded),
               selectedIcon: Icon(Icons.person_rounded),
               label: 'Profile',

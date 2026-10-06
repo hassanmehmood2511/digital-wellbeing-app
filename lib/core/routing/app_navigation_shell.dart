@@ -43,6 +43,11 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             message: 'Your progress will be shown here.',
             icon: Icons.insights_rounded,
           ),
+          const _DestinationPlaceholder(
+            title: 'Apps',
+            message: 'Apps you choose to manage with Behtar will appear here.',
+            icon: Icons.phonelink_lock_rounded,
+          ),
           ProfileScreen(controller: widget.settingsController),
         ],
       ),

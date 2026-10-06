@@ -28,6 +28,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Your progress will be shown here.'), findsOneWidget);
 
+    await tester.tap(find.text('Apps'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Apps you choose to manage with Behtar will appear here.'),
+      findsOneWidget,
+    );
+
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
     expect(find.text('Your account'), findsOneWidget);
