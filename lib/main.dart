@@ -2,19 +2,43 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'features/digital_wellbeing/screens/usage_overview_screen.dart';
 
+import 'core/theme/app_theme.dart';
+import 'features/settings/settings_controller.dart';
+import 'features/settings/settings_screen.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(const BehtarApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class BehtarApp extends StatefulWidget {
+  const BehtarApp({super.key});
+
+  @override
+  State<BehtarApp> createState() => _BehtarAppState();
+}
+
+class _BehtarAppState extends State<BehtarApp> {
+  late final SettingsController _settingsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _settingsController = SettingsController();
+  }
+
+  @override
+  void dispose() {
+    _settingsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Digital Wellbeing App',
-      theme: AppTheme.lightTheme,
-      home: const UsageOverviewScreen(), // Back to main screen
+      title: 'Behtar',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      home: SettingsScreen(controller: _settingsController),
     );
   }
 }
