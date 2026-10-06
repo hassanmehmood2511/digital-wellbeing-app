@@ -8,8 +8,11 @@ void main() {
   ) async {
     await tester.pumpWidget(const BehtarApp());
 
-    expect(find.text('Settings'), findsOneWidget);
-    await tester.tap(find.text('Profile settings'));
+    await tester.tap(find.text('Profile').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Your account'), findsOneWidget);
+    expect(find.text('Language'), findsNothing);
+    await tester.tap(find.text('Profile details'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, 'Sara Ahmed');
@@ -26,11 +29,18 @@ void main() {
     expect(find.text('Sara Ahmed'), findsOneWidget);
   });
 
-  testWidgets('language selection and notification quiet state work', (
+  testWidgets('profile settings button opens general app settings', (
     tester,
   ) async {
     await tester.pumpWidget(const BehtarApp());
 
+    await tester.tap(find.text('Profile').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('App settings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('App settings'), findsOneWidget);
+    expect(find.text('Profile details'), findsNothing);
     await tester.tap(find.text('Language'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('اردو (Urdu)'));
@@ -42,6 +52,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('اردو (Urdu)'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('App settings'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Notifications'));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(SwitchListTile).first);
@@ -60,7 +74,8 @@ void main() {
   ) async {
     await tester.pumpWidget(const BehtarApp());
 
-    await tester.ensureVisible(find.text('Account settings'));
+    await tester.tap(find.text('Profile').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Account settings'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Delete account'));

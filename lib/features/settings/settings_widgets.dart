@@ -7,15 +7,17 @@ class SettingsPage extends StatelessWidget {
     required this.title,
     required this.children,
     super.key,
+    this.actions,
   });
 
   final String title;
   final List<Widget> children;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(title: Text(title), actions: actions),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(

@@ -93,6 +93,34 @@ abstract final class AppTheme {
           color: BehtarColors.primaryText,
         ),
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: BehtarColors.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 3,
+        height: 76,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        indicatorColor: BehtarColors.primarySoft,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: selected
+                ? BehtarColors.primaryDark
+                : BehtarColors.secondaryText,
+            size: 24,
+          );
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 11,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            color: selected
+                ? BehtarColors.primaryDark
+                : BehtarColors.secondaryText,
+          );
+        }),
+      ),
       cardTheme: CardThemeData(
         color: BehtarColors.surface,
         elevation: 0,

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 class SettingsController extends ChangeNotifier {
-  String fullName = 'Ayesha Khan';
-  String email = 'ayesha.khan@example.com';
+  String fullName = 'Hassan Mehmood';
+  String email = 'hassanmehmood@example.com';
   String phone = '+92 300 1234567';
   String selectedLanguage = 'English';
 
