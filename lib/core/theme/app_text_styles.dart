@@ -1,62 +1,62 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 class AppTextStyles {
   AppTextStyles._();
 
-  // Poppins - Product identity
+  // H1 - Main Page / Hero Heading
   static const TextStyle h1 = TextStyle(
+    fontFamily: 'Poppins',
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+    color: AppColors.textPrimary,
+  );
+
+  // H2 - Section Heading
+  static const TextStyle h2 = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 24,
     fontWeight: FontWeight.w600,
-    height: 1.25,
+    color: AppColors.textPrimary,
   );
 
-  static const TextStyle h2 = TextStyle(
+  // H3 - Card / Component Heading
+  static const TextStyle h3 = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 20,
     fontWeight: FontWeight.w600,
-    height: 1.3,
+    color: AppColors.textPrimary,
   );
 
-  static const TextStyle h3 = TextStyle(
+  // Body - Main Supporting Content
+  static const TextStyle body = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 16,
-    fontWeight: FontWeight.w500,
-    height: 1.35,
-  );
-
-  // Inter - Supporting content
-  static const TextStyle body = TextStyle(
-    fontFamily: 'Inter',
-    fontSize: 15,
     fontWeight: FontWeight.w400,
-    height: 1.55,
+    color: AppColors.textSecondary,
   );
 
+  // Small - Labels / Metadata
   static const TextStyle bodySmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Poppins',
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    height: 1.5,
+    color: AppColors.textSecondary,
   );
 
-  // Labels / captions
+  // Label
   static const TextStyle label = TextStyle(
-    fontFamily: 'Inter',
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
+    fontFamily: 'Poppins',
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
   );
 
-  static const TextStyle caption = TextStyle(
-    fontFamily: 'Inter',
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
-  );
-
-  // Buttons / interactive text
+  // Button
   static const TextStyle button = TextStyle(
     fontFamily: 'Poppins',
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: FontWeight.w600,
+    color: AppColors.white,
   );
 }

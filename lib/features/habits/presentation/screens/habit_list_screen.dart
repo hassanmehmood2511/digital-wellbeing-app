@@ -18,21 +18,17 @@ class HabitListScreen extends StatelessWidget {
 
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        foregroundColor: AppColors.text,
-        elevation: 0,
+        foregroundColor: AppColors.textPrimary,
+        elevation: AppSpacing.elevationNone,
         titleSpacing: AppSpacing.base,
 
-        title: Text(
-          'My Habits',
-          style: AppTextStyles.h1.copyWith(color: AppColors.text),
-        ),
+        title: Text('My Habits', style: AppTextStyles.h1),
 
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: IconButton(
               tooltip: 'Add habit',
-
               onPressed: () async {
                 await Navigator.push(
                   context,
@@ -41,7 +37,6 @@ class HabitListScreen extends StatelessWidget {
                   ),
                 );
               },
-
               icon: Container(
                 width: 40,
                 height: 40,
@@ -49,11 +44,7 @@ class HabitListScreen extends StatelessWidget {
                   color: AppColors.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.add,
-                  color: AppColors.surface,
-                  size: 24,
-                ),
+                child: const Icon(Icons.add, color: AppColors.white, size: 24),
               ),
             ),
           ),
@@ -69,7 +60,7 @@ class HabitListScreen extends StatelessWidget {
           children: [
             Text(
               'Build better days, one habit at a time.',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.muted),
+              style: AppTextStyles.bodySmall,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -86,9 +77,7 @@ class HabitListScreen extends StatelessWidget {
                       child: Text(
                         'No habits yet.\nCreate your first habit!',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.body.copyWith(
-                          color: AppColors.muted,
-                        ),
+                        style: AppTextStyles.body,
                       ),
                     );
                   }

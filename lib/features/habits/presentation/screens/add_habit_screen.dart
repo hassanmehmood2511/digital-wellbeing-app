@@ -88,31 +88,37 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        foregroundColor: AppColors.text,
-        elevation: 0,
-        title: Text(
-          'Create Habit',
-          style: AppTextStyles.h2.copyWith(color: AppColors.text),
-        ),
+        foregroundColor: AppColors.textPrimary,
+
+        // Prevent Material 3 scroll tint.
+        elevation: AppSpacing.elevationNone,
+        scrolledUnderElevation: AppSpacing.elevationNone,
+        surfaceTintColor: Colors.transparent,
+
+        title: Text('Create Habit', style: AppTextStyles.h2),
       ),
 
       body: Form(
         key: _formKey,
+
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.base),
+          padding: AppSpacing.screenPadding,
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Habit icon
+              // Habit Icon
               Center(
                 child: Container(
                   width: 76,
                   height: 76,
                   alignment: Alignment.center,
+
                   decoration: const BoxDecoration(
-                    color: AppColors.primarySoft,
+                    color: AppColors.mint,
                     shape: BoxShape.circle,
                   ),
+
                   child: Text(
                     _selectedIcon,
                     style: const TextStyle(fontSize: 38),
@@ -122,9 +128,13 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               const SizedBox(height: AppSpacing.lg),
 
+              // Habit Name
               Text(
                 'Habit name',
-                style: AppTextStyles.label.copyWith(color: AppColors.text),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.sm),
@@ -132,29 +142,15 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               TextFormField(
                 controller: _nameController,
                 textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  hintText: 'e.g. Read for 20 minutes',
-                  hintStyle: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.muted,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                  ),
+
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
                 ),
+
+                decoration: _inputDecoration(
+                  hintText: 'e.g. Read for 20 minutes',
+                ),
+
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter a habit name.';
@@ -170,9 +166,13 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               const SizedBox(height: AppSpacing.lg),
 
+              // Description
               Text(
                 'Description',
-                style: AppTextStyles.label.copyWith(color: AppColors.text),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.sm),
@@ -180,29 +180,13 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Describe your habit',
-                  hintStyle: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.muted,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                  ),
+
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
                 ),
+
+                decoration: _inputDecoration(hintText: 'Describe your habit'),
+
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter a description.';
@@ -214,22 +198,42 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               const SizedBox(height: AppSpacing.lg),
 
+              // Category
               Text(
                 'Category',
-                style: AppTextStyles.label.copyWith(color: AppColors.text),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.sm),
 
               DropdownButtonFormField<String>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
+
+                // Soft green dropdown background.
+                dropdownColor: AppColors.background,
+
+                // Keep dropdown text dark green.
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+
                 decoration: _inputDecoration(),
+
                 items: _categories.map((category) {
                   return DropdownMenuItem(
                     value: category,
-                    child: Text(category),
+                    child: Text(
+                      category,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   );
                 }).toList(),
+
                 onChanged: (value) {
                   if (value == null) return;
 
@@ -241,22 +245,42 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               const SizedBox(height: AppSpacing.lg),
 
+              // Frequency
               Text(
                 'Frequency',
-                style: AppTextStyles.label.copyWith(color: AppColors.text),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.sm),
 
               DropdownButtonFormField<String>(
-                value: _selectedFrequency,
+                initialValue: _selectedFrequency,
+
+                // Soft green dropdown background.
+                dropdownColor: AppColors.background,
+
+                // Keep dropdown text dark green.
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+
                 decoration: _inputDecoration(),
+
                 items: _frequencies.map((frequency) {
                   return DropdownMenuItem(
                     value: frequency,
-                    child: Text(frequency),
+                    child: Text(
+                      frequency,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   );
                 }).toList(),
+
                 onChanged: (value) {
                   if (value == null) return;
 
@@ -268,9 +292,13 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               const SizedBox(height: AppSpacing.lg),
 
+              // Daily Target
               Text(
                 'Daily target',
-                style: AppTextStyles.label.copyWith(color: AppColors.text),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.sm),
@@ -278,7 +306,13 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               TextFormField(
                 controller: _targetController,
                 keyboardType: TextInputType.number,
+
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+
                 decoration: _inputDecoration(hintText: 'e.g. 1'),
+
                 validator: (value) {
                   final target = int.tryParse(value?.trim() ?? '');
 
@@ -292,9 +326,13 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               const SizedBox(height: AppSpacing.lg),
 
+              // Choose Icon
               Text(
                 'Choose an icon',
-                style: AppTextStyles.label.copyWith(color: AppColors.text),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.sm),
@@ -302,6 +340,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               Wrap(
                 spacing: AppSpacing.sm,
                 runSpacing: AppSpacing.sm,
+
                 children: _icons.map((icon) {
                   final isSelected = icon == _selectedIcon;
 
@@ -311,15 +350,17 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                         _selectedIcon = icon;
                       });
                     },
+
                     child: Container(
                       width: 48,
                       height: 48,
                       alignment: Alignment.center,
+
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primarySoft
-                            : AppColors.surface,
+                        color: isSelected ? AppColors.mint : AppColors.white,
+
                         shape: BoxShape.circle,
+
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
@@ -327,6 +368,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                           width: isSelected ? 2 : 1,
                         ),
                       ),
+
                       child: Text(icon, style: const TextStyle(fontSize: 23)),
                     ),
                   );
@@ -335,12 +377,27 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               const SizedBox(height: AppSpacing.xl),
 
+              // Create Habit Button
               SizedBox(
                 width: double.infinity,
                 height: 48,
+
                 child: ElevatedButton(
                   onPressed: _createHabit,
-                  child: const Text('Create Habit'),
+
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    elevation: AppSpacing.elevationNone,
+
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusMedium,
+                      ),
+                    ),
+                  ),
+
+                  child: Text('Create Habit', style: AppTextStyles.button),
                 ),
               ),
 
@@ -355,18 +412,41 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   InputDecoration _inputDecoration({String? hintText}) {
     return InputDecoration(
       hintText: hintText,
+
+      hintStyle: AppTextStyles.bodySmall.copyWith(
+        color: AppColors.textSecondary,
+      ),
+
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: AppColors.white,
+
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.md,
+      ),
+
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
         borderSide: const BorderSide(color: AppColors.border),
       ),
+
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
         borderSide: const BorderSide(color: AppColors.border),
       ),
+
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+      ),
+
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+        borderSide: const BorderSide(color: AppColors.primary),
+      ),
+
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
         borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
       ),
     );

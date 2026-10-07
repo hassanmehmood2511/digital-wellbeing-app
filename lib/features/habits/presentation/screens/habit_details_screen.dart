@@ -18,14 +18,11 @@ class HabitDetailsScreen extends StatelessWidget {
 
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        foregroundColor: AppColors.text,
-        elevation: 0,
+        foregroundColor: AppColors.textPrimary,
+        elevation: AppSpacing.elevationNone,
         titleSpacing: AppSpacing.base,
 
-        title: Text(
-          'Habit Details',
-          style: AppTextStyles.h1.copyWith(color: AppColors.text),
-        ),
+        title: Text('Habit Details', style: AppTextStyles.h1),
       ),
 
       body: ListenableBuilder(
@@ -40,17 +37,14 @@ class HabitDetailsScreen extends StatelessWidget {
 
           if (index == -1) {
             return Center(
-              child: Text(
-                'Habit not found.',
-                style: AppTextStyles.body.copyWith(color: AppColors.muted),
-              ),
+              child: Text('Habit not found.', style: AppTextStyles.body),
             );
           }
 
           final currentHabit = habits[index];
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.base),
+            padding: AppSpacing.screenPadding,
 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,10 +57,7 @@ class HabitDetailsScreen extends StatelessWidget {
 
                 const SizedBox(height: AppSpacing.lg),
 
-                Text(
-                  'Habit Information',
-                  style: AppTextStyles.h2.copyWith(color: AppColors.text),
-                ),
+                Text('Habit Information', style: AppTextStyles.h2),
 
                 const SizedBox(height: AppSpacing.md),
 
@@ -124,15 +115,17 @@ class HabitDetailsScreen extends StatelessWidget {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.surface,
-                      disabledBackgroundColor: AppColors.primarySoft,
-                      disabledForegroundColor: AppColors.primaryDark,
-                      elevation: 0,
+                      foregroundColor: AppColors.white,
+                      disabledBackgroundColor: AppColors.sage,
+                      disabledForegroundColor: AppColors.textSecondary,
+                      elevation: AppSpacing.elevationNone,
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMedium,
+                        ),
                       ),
                     ),
                   ),
@@ -149,13 +142,15 @@ class HabitDetailsScreen extends StatelessWidget {
                     icon: const Icon(Icons.delete_outline),
                     label: const Text('Delete Habit'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      side: const BorderSide(color: AppColors.error),
+                      foregroundColor: AppColors.textSecondary,
+                      side: const BorderSide(color: AppColors.border),
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMedium,
+                        ),
                       ),
                     ),
                   ),
@@ -175,16 +170,13 @@ class HabitDetailsScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: AppColors.white,
 
-          title: Text(
-            'Delete Habit?',
-            style: AppTextStyles.h2.copyWith(color: AppColors.text),
-          ),
+          title: Text('Delete Habit?', style: AppTextStyles.h2),
 
           content: Text(
             'Are you sure you want to delete "${habit.title}"?',
-            style: AppTextStyles.body.copyWith(color: AppColors.muted),
+            style: AppTextStyles.body,
           ),
 
           actions: [
@@ -192,7 +184,12 @@ class HabitDetailsScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
-              child: Text('Cancel', style: TextStyle(color: AppColors.muted)),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
 
             TextButton(
@@ -202,7 +199,13 @@ class HabitDetailsScreen extends StatelessWidget {
                 Navigator.pop(dialogContext);
                 Navigator.pop(context);
               },
-              child: Text('Delete', style: TextStyle(color: AppColors.error)),
+              child: Text(
+                'Delete',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         );
@@ -223,8 +226,8 @@ class _HabitHeader extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
 
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
         border: Border.all(color: AppColors.border),
       ),
 
@@ -236,7 +239,7 @@ class _HabitHeader extends StatelessWidget {
             height: 56,
 
             decoration: const BoxDecoration(
-              color: AppColors.primarySoft,
+              color: AppColors.mint,
               shape: BoxShape.circle,
             ),
 
@@ -247,17 +250,11 @@ class _HabitHeader extends StatelessWidget {
 
           const SizedBox(height: AppSpacing.md),
 
-          Text(
-            habit.title,
-            style: AppTextStyles.h1.copyWith(color: AppColors.text),
-          ),
+          Text(habit.title, style: AppTextStyles.h1),
 
           const SizedBox(height: AppSpacing.sm),
 
-          Text(
-            habit.description,
-            style: AppTextStyles.body.copyWith(color: AppColors.muted),
-          ),
+          Text(habit.description, style: AppTextStyles.body),
         ],
       ),
     );
@@ -276,8 +273,8 @@ class _ProgressSection extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
 
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.mint,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
       ),
 
       child: Column(
@@ -286,15 +283,13 @@ class _ProgressSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Progress',
-                style: AppTextStyles.h2.copyWith(color: AppColors.text),
-              ),
+              Text('Progress', style: AppTextStyles.h2),
 
               Text(
                 '${habit.completedCount}/${habit.targetCount}',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primaryDark,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -303,12 +298,12 @@ class _ProgressSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
 
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSmall),
 
             child: LinearProgressIndicator(
               value: habit.progress,
               minHeight: 8,
-              backgroundColor: AppColors.surface,
+              backgroundColor: AppColors.white,
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppColors.primary,
               ),
@@ -319,7 +314,7 @@ class _ProgressSection extends StatelessWidget {
 
           Text(
             '${(habit.progress * 100).round()}% completed',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.muted),
+            style: AppTextStyles.bodySmall,
           ),
         ],
       ),
@@ -348,8 +343,8 @@ class _InfoCard extends StatelessWidget {
       ),
 
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
         border: Border.all(color: AppColors.border),
       ),
 
@@ -360,11 +355,11 @@ class _InfoCard extends StatelessWidget {
             height: 42,
 
             decoration: const BoxDecoration(
-              color: AppColors.primarySoft,
+              color: AppColors.mint,
               shape: BoxShape.circle,
             ),
 
-            child: Icon(icon, color: AppColors.primaryDark, size: 22),
+            child: Icon(icon, color: AppColors.primary, size: 22),
           ),
 
           const SizedBox(width: AppSpacing.md),
@@ -373,18 +368,15 @@ class _InfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.muted,
-                  ),
-                ),
+                Text(title, style: AppTextStyles.bodySmall),
 
-                const SizedBox(height: 2),
+                const SizedBox(height: AppSpacing.xs),
 
                 Text(
                   value,
-                  style: AppTextStyles.body.copyWith(color: AppColors.text),
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ],
             ),

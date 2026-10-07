@@ -20,21 +20,21 @@ class HabitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(15),
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: AppSpacing.cardPadding,
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(15),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
             border: Border.all(color: AppColors.border),
             boxShadow: const [
               BoxShadow(
-                color: Color.fromRGBO(43, 43, 43, 0.08),
-                blurRadius: 4,
+                color: Color.fromRGBO(27, 67, 50, 0.08),
+                blurRadius: 6,
                 offset: Offset(0, 2),
               ),
             ],
@@ -47,7 +47,7 @@ class HabitCard extends StatelessWidget {
                 height: 52,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: AppColors.mint,
                   shape: BoxShape.circle,
                 ),
                 child: Text(habit.icon, style: const TextStyle(fontSize: 26)),
@@ -60,10 +60,7 @@ class HabitCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      habit.title,
-                      style: AppTextStyles.h3.copyWith(color: AppColors.text),
-                    ),
+                    Text(habit.title, style: AppTextStyles.h3),
 
                     const SizedBox(height: AppSpacing.xs),
 
@@ -71,9 +68,7 @@ class HabitCard extends StatelessWidget {
                       habit.description,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.muted,
-                      ),
+                      style: AppTextStyles.bodySmall,
                     ),
 
                     const SizedBox(height: AppSpacing.sm),
@@ -82,20 +77,20 @@ class HabitCard extends StatelessWidget {
                       children: [
                         Text(
                           '${habit.completedCount}/${habit.targetCount} today',
-                          style: AppTextStyles.label.copyWith(
-                            color: AppColors.muted,
-                          ),
+                          style: AppTextStyles.label,
                         ),
 
                         const SizedBox(width: AppSpacing.sm),
 
                         Expanded(
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusSmall,
+                            ),
                             child: LinearProgressIndicator(
                               value: habit.progress,
                               minHeight: 7,
-                              backgroundColor: AppColors.primarySoft,
+                              backgroundColor: AppColors.sage,
                               valueColor: const AlwaysStoppedAnimation<Color>(
                                 AppColors.primary,
                               ),
@@ -119,8 +114,8 @@ class HabitCard extends StatelessWidget {
                       ? Icons.check_circle
                       : Icons.radio_button_unchecked,
                   color: habit.isCompleted
-                      ? AppColors.success
-                      : AppColors.primary,
+                      ? AppColors.primary
+                      : AppColors.secondary,
                   size: 24,
                 ),
               ),
