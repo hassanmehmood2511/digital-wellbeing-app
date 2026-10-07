@@ -37,12 +37,12 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundColor: BehtarColors.primarySoft,
-                    foregroundColor: BehtarColors.primaryDark,
+                    backgroundColor: BehtarColors.mint,
+                    foregroundColor: BehtarColors.primary,
                     child: Text(
                       _initials(controller.fullName),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: BehtarColors.primaryDark,
+                            color: BehtarColors.primary,
                           ),
                     ),
                   ),
@@ -80,7 +80,7 @@ class ProfileScreen extends StatelessWidget {
                   SettingsActionTile(
                     icon: Icons.person_outline_rounded,
                     title: 'Profile details',
-                    subtitle: 'Edit your name, email and phone',
+                    subtitle: 'Edit your name and phone',
                     onTap: () => _open(
                       context,
                       ProfileSettingsScreen(controller: controller),

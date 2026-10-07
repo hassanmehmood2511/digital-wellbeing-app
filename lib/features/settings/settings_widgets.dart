@@ -64,6 +64,8 @@ class SettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: BehtarColors.surface,
+      elevation: 1,
+      shadowColor: BehtarColors.primaryText.withValues(alpha: 0.04),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(BehtarRadii.card),
         side: const BorderSide(color: BehtarColors.border),
@@ -100,8 +102,8 @@ class SettingsActionTile extends StatelessWidget {
       ),
       leading: CircleAvatar(
         radius: 22,
-        backgroundColor: BehtarColors.primarySoft,
-        foregroundColor: BehtarColors.primaryDark,
+        backgroundColor: BehtarColors.mint,
+        foregroundColor: BehtarColors.primary,
         child: Icon(icon, size: 21),
       ),
       title: Text(title, style: Theme.of(context).textTheme.titleMedium),

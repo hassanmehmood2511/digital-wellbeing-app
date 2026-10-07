@@ -84,8 +84,8 @@ class _DestinationPlaceholder extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 32,
-                backgroundColor: BehtarColors.primarySoft,
-                foregroundColor: BehtarColors.primaryDark,
+                backgroundColor: BehtarColors.mint,
+                foregroundColor: BehtarColors.primary,
                 child: Icon(icon, size: 30),
               ),
               const SizedBox(height: BehtarSpacing.base),
