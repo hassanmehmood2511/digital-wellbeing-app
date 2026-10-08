@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../features/challenges/challenges_controller.dart';
+import '../../features/challenges/challenges_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
 import '../theme/app_theme.dart';
@@ -16,6 +18,14 @@ class AppNavigationShell extends StatefulWidget {
 
 class _AppNavigationShellState extends State<AppNavigationShell> {
   int _currentIndex = 0;
+  late final ChallengesController _challengesController =
+      ChallengesController();
+
+  @override
+  void dispose() {
+    _challengesController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +43,8 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             message: 'Your habits will appear here.',
             icon: Icons.checklist_rounded,
           ),
-          const _DestinationPlaceholder(
-            title: 'Challenges',
-            message: 'Find a challenge to grow together.',
-            icon: Icons.emoji_events_rounded,
+          ChallengesScreen(
+            controller: _challengesController,
           ),
           const _DestinationPlaceholder(
             title: 'Progress',
