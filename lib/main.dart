@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Digital Wellbeing App',
       theme: AppTheme.lightTheme,
       home: const UsageOverviewScreen(), // Back to main screen

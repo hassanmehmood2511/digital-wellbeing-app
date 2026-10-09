@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Primary Green Palette
+  static const Color primary = Color(0xFF2E7D32);
+  static const Color secondary = Color(0xFF4CAF50);
+  static const Color lightGreen = Color(0xFF81C784);
+  static const Color sage = Color(0xFFA5D6A7);
+  static const Color mint = Color(0xFFE8F5E9);
+
   // Backgrounds & Surfaces
-  static const Color background = Color(0xFFFAFAF7);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color primarySoft = Color(0xFFE6F3F0);
+  static const Color background = Color(0xFFF5FAF5);
+  static const Color white = Color(0xFFFFFFFF);
 
   // Text Colors
-  static const Color primaryText = Color(0xFF2B2B2B);
-  static const Color secondaryText = Color(0xFF6B7280);
+  static const Color textPrimary = Color(0xFF1B4332);
+  static const Color textSecondary = Color(0xFF5C6B63);
 
-  // Brand Colors
-  static const Color primary = Color(0xFF3E8E7E);
-  static const Color primaryDark = Color(0xFF2F7164);
-  static const Color secondary = Color(0xFF8B7BB8);
-
-  // Status Colors
-  static const Color success = Color(0xFF2F9E72);
-  static const Color warning = Color(0xFFD99A3D);
-  static const Color error = Color(0xFFC95F5F);
-
-  // Borders
-  static const Color border = Color(0xFFE5E3DC);
+  // Borders & Dividers
+  static const Color border = Color(0xFFDDE8DD);
 }
