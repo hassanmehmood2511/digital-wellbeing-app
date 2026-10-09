@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
+import '../../features/habits/presentation/screens/habit_list_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/behtar_bottom_navigation_bar.dart';
 
@@ -28,11 +29,10 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             message: 'Your day starts with one small step.',
             icon: Icons.home_rounded,
           ),
-          const _DestinationPlaceholder(
-            title: 'Habits',
-            message: 'Your habits will appear here.',
-            icon: Icons.checklist_rounded,
-          ),
+
+          // Habit feature connected to the navigation shell.
+          const HabitListScreen(),
+
           const _DestinationPlaceholder(
             title: 'Challenges',
             message: 'Find a challenge to grow together.',
