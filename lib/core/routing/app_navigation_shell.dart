@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../features/home/home_dashboard_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
 import '../theme/app_theme.dart';
@@ -23,10 +24,9 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          const _DestinationPlaceholder(
-            title: 'Home',
-            message: 'Your day starts with one small step.',
-            icon: Icons.home_rounded,
+          HomeDashboardScreen(
+            controller: widget.settingsController,
+            onOpenTab: (index) => setState(() => _currentIndex = index),
           ),
           const _DestinationPlaceholder(
             title: 'Habits',

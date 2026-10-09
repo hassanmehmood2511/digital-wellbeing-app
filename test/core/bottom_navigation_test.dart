@@ -12,9 +12,14 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(const BehtarApp());
+    await tester.pumpAndSettle();
 
-    expect(find.text('Your day starts with one small step.'), findsOneWidget);
-    expect(find.text('Home'), findsNWidgets(2));
+    expect(find.text('Today’s Progress'), findsOneWidget);
+    expect(find.text('Today’s Habits'), findsOneWidget);
+    expect(find.text('Points'), findsOneWidget);
+    expect(find.text('App Usage'), findsOneWidget);
+    expect(find.text('7-Day Challenge'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
 
     await tester.tap(find.text('Habits'));
     await tester.pumpAndSettle();
