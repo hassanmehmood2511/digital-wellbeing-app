@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../features/challenges/challenges_controller.dart';
+import '../../features/challenges/challenges_screen.dart';
+import '../../features/groups/groups_controller.dart';
+import '../../features/groups/groups_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
 import '../../features/habits/presentation/screens/habit_list_screen.dart';
@@ -17,6 +21,16 @@ class AppNavigationShell extends StatefulWidget {
 
 class _AppNavigationShellState extends State<AppNavigationShell> {
   int _currentIndex = 0;
+  late final ChallengesController _challengesController =
+      ChallengesController();
+  late final GroupsController _groupsController = GroupsController();
+
+  @override
+  void dispose() {
+    _challengesController.dispose();
+    _groupsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +43,7 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             message: 'Your day starts with one small step.',
             icon: Icons.home_rounded,
           ),
+<<<<<<< HEAD
 
           // Habit feature connected to the navigation shell.
           const HabitListScreen(),
@@ -37,6 +52,16 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             title: 'Challenges',
             message: 'Find a challenge to grow together.',
             icon: Icons.emoji_events_rounded,
+=======
+          const _DestinationPlaceholder(
+            title: 'Habits',
+            message: 'Your habits will appear here.',
+            icon: Icons.checklist_rounded,
+          ),
+          ChallengesScreen(
+            controller: _challengesController,
+            onOpenGroups: _openGroups,
+>>>>>>> origin/dev
           ),
           const _DestinationPlaceholder(
             title: 'Progress',
@@ -56,6 +81,17 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
         onDestinationSelected: (index) {
           setState(() => _currentIndex = index);
         },
+      ),
+    );
+  }
+
+  void _openGroups() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => GroupsScreen(
+          controller: _groupsController,
+          currentUserName: widget.settingsController.fullName,
+        ),
       ),
     );
   }
