@@ -21,8 +21,10 @@ class AppNavigationShell extends StatefulWidget {
 
 class _AppNavigationShellState extends State<AppNavigationShell> {
   int _currentIndex = 0;
+
   late final ChallengesController _challengesController =
       ChallengesController();
+
   late final GroupsController _groupsController = GroupsController();
 
   @override
@@ -43,36 +45,28 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             message: 'Your day starts with one small step.',
             icon: Icons.home_rounded,
           ),
-<<<<<<< HEAD
 
           // Habit feature connected to the navigation shell.
           const HabitListScreen(),
 
-          const _DestinationPlaceholder(
-            title: 'Challenges',
-            message: 'Find a challenge to grow together.',
-            icon: Icons.emoji_events_rounded,
-=======
-          const _DestinationPlaceholder(
-            title: 'Habits',
-            message: 'Your habits will appear here.',
-            icon: Icons.checklist_rounded,
-          ),
+          // Challenges feature from dev.
           ChallengesScreen(
             controller: _challengesController,
             onOpenGroups: _openGroups,
->>>>>>> origin/dev
           ),
+
           const _DestinationPlaceholder(
             title: 'Progress',
             message: 'Your progress will be shown here.',
             icon: Icons.insights_rounded,
           ),
+
           const _DestinationPlaceholder(
             title: 'Apps',
             message: 'Apps you choose to manage with Behtar will appear here.',
             icon: Icons.phonelink_lock_rounded,
           ),
+
           ProfileScreen(controller: widget.settingsController),
         ],
       ),
