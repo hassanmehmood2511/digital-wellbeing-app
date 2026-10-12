@@ -31,17 +31,17 @@ class AppTypography {
     color: AppColors.textSecondary,
   );
 
-  // Small - Labels, metadata (Poppins, 14px, Regular)
-  static TextStyle small = GoogleFonts.poppins(
+  // Body - Supporting text (Inter, 14px, 400)
+  static TextStyle body = GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
+    color: const Color(0xFF6B7280),
   );
 
-  // Button Text (Poppins, 16px, Medium)
-  static TextStyle button = GoogleFonts.poppins(
-    fontSize: 16,
+  // Label - Caption (Inter, 12px, 500)
+  static TextStyle label = GoogleFonts.inter(
+    fontSize: 12,
     fontWeight: FontWeight.w500,
-    color: AppColors.white,
+    color: const Color(0xFF6B7280),
   );
 }
