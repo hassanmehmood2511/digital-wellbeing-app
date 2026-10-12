@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../features/challenges/challenges_controller.dart';
 import '../../features/challenges/challenges_screen.dart';
+import '../../features/groups/groups_controller.dart';
+import '../../features/groups/groups_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
 import '../theme/app_theme.dart';
@@ -20,10 +22,12 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
   int _currentIndex = 0;
   late final ChallengesController _challengesController =
       ChallengesController();
+  late final GroupsController _groupsController = GroupsController();
 
   @override
   void dispose() {
     _challengesController.dispose();
+    _groupsController.dispose();
     super.dispose();
   }
 
@@ -45,6 +49,7 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
           ),
           ChallengesScreen(
             controller: _challengesController,
+            onOpenGroups: _openGroups,
           ),
           const _DestinationPlaceholder(
             title: 'Progress',
@@ -64,6 +69,17 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
         onDestinationSelected: (index) {
           setState(() => _currentIndex = index);
         },
+      ),
+    );
+  }
+
+  void _openGroups() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => GroupsScreen(
+          controller: _groupsController,
+          currentUserName: widget.settingsController.fullName,
+        ),
       ),
     );
   }
