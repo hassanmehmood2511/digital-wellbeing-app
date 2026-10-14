@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'package:digital_wellbeing_app/models/app_usage.dart';
 import 'package:digital_wellbeing_app/data/app_data.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 
 class AppUsageDetailScreen extends StatefulWidget {
@@ -33,7 +33,6 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
-      // FIX 2: Bottom padding 100 kar di taake button navigation bar se cut na ho
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 140),
         child: Column(
@@ -41,12 +40,11 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
           children: [
             const SizedBox(height: 16),
 
-            // FIX 1: Icon ko Theme Colors (Mint + Primary Green) mein convert kiya
             Container(
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.mint, // Design System Rule #5: Soft icon container
+                color: AppColors.mint,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Center(child: _getAppIcon(currentAppData.appName)),
@@ -73,7 +71,10 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                 ),
                 Column(
                   children: [
-                    Text(_formatMinutes(currentAppData.usageMinutes), style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                    Text(
+                      _formatMinutes(currentAppData.usageMinutes),
+                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    ),
                     const Text('used', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                   ],
                 ),
@@ -91,15 +92,27 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(isOverLimit ? Icons.warning_rounded : Icons.check_circle_outline, color: AppColors.primary, size: 32),
+                  Icon(
+                    isOverLimit ? Icons.warning_rounded : Icons.check_circle_outline,
+                    color: AppColors.primary,
+                    size: 32,
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(isOverLimit ? 'Over Limit!' : 'Within Limit', style: AppTypography.h3.copyWith(fontSize: 20)),
+                        Text(
+                          isOverLimit ? 'Over Limit!' : 'Within Limit',
+                          style: AppTypography.h3.copyWith(fontSize: 20),
+                        ),
                         const SizedBox(height: 4),
-                        Text(isOverLimit ? 'You exceeded your limit by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}' : 'You saved ${_formatMinutes(timeSaved)} today', style: AppTypography.body),
+                        Text(
+                          isOverLimit
+                              ? 'You exceeded your limit by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}'
+                              : 'You saved ${_formatMinutes(timeSaved)} today',
+                          style: AppTypography.body,
+                        ),
                       ],
                     ),
                   ),
@@ -108,30 +121,51 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
             ),
             const SizedBox(height: 24),
 
-            const Align(alignment: Alignment.centerLeft, child: Text('Detailed Stats', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Detailed Stats', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            ),
             const SizedBox(height: 12),
             _buildStatRow('Daily Limit', _formatMinutes(currentAppData.dailyLimitMinutes), Icons.timer_outlined),
             _buildStatRow('Time Used', _formatMinutes(currentAppData.usageMinutes), Icons.phone_android),
-            _buildStatRow('Remaining', isOverLimit ? 'Exceeded by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}' : _formatMinutes(timeSaved), isOverLimit ? Icons.trending_up : Icons.trending_down),
+            _buildStatRow(
+              'Remaining',
+              isOverLimit ? 'Exceeded by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}' : _formatMinutes(timeSaved),
+              isOverLimit ? Icons.trending_up : Icons.trending_down,
+            ),
             _buildStatRow('Usage Percentage', '${(percentage * 100).toStringAsFixed(0)}%', Icons.pie_chart_outline),
             const SizedBox(height: 32),
 
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(color: AppColors.mint, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.border, width: 1)),
+              decoration: BoxDecoration(
+                color: AppColors.mint,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.border, width: 1),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: [Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 24), const SizedBox(width: 8), const Text('Suggestion', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary))]),
+                  Row(
+                    children: [
+                      Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 24),
+                      const SizedBox(width: 8),
+                      const Text('Suggestion', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    ],
+                  ),
                   const SizedBox(height: 12),
-                  Text(isOverLimit ? 'Try reducing your ${currentAppData.appName} usage tomorrow.' : 'Great job! You\'re managing your ${currentAppData.appName} usage well.', style: AppTypography.body),
+                  Text(
+                    isOverLimit
+                        ? 'Try reducing your ${currentAppData.appName} usage tomorrow.'
+                        : 'Great job! You\'re managing your ${currentAppData.appName} usage well.',
+                    style: AppTypography.body,
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // Edit Button (Ab yeh cut nahi hoga kyunke upar padding barha di hai)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -150,13 +184,17 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.border, width: 1)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
       child: Row(
         children: [
           Icon(icon, color: AppColors.textSecondary, size: 20),
           const SizedBox(width: 12),
           Expanded(child: Text(label, style: AppTypography.body)),
-          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         ],
       ),
     );
@@ -181,12 +219,12 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                   Text(currentAppData.appName, style: AppTypography.body),
                   const SizedBox(height: 16),
 
-                  // 1. Existing Slider (Quick adjustment ke liye)
+                  // ✅ FIXED SLIDER: Max is now 1440 (24 hours)
                   Slider(
-                    value: newLimit.clamp(15, 240).toDouble(),
+                    value: newLimit.clamp(15, 1440).toDouble(),
                     min: 15,
-                    max: 240,
-                    divisions: 15,
+                    max: 1440,
+                    divisions: 95,
                     activeColor: AppColors.primary,
                     inactiveColor: AppColors.border,
                     onChanged: (double value) {
@@ -196,16 +234,20 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                       });
                     },
                   ),
-                  Text('Slider: ${_formatMinutes(newLimit.clamp(15, 240))}', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                  const SizedBox(height: 16),
 
-                  // 2. New Manual Input (Zyada time set karne ke liye)
+                  // ✅ ONLY ONE Text widget showing slider value (No duplicates!)
+                  Text(
+                    'Slider: ${_formatMinutes(newLimit.clamp(15, 1440))}',
+                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                  ),
+
+                  const SizedBox(height: 16),
                   const Text('Or enter manually (in minutes):', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _limitController,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Sirf numbers allow karega
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
                       hintText: 'Enter minutes (e.g., 300 for 5h)',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
@@ -222,16 +264,27 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  Text('Total Limit: ${_formatMinutes(newLimit)}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                  Text(
+                    'Total Limit: ${_formatMinutes(newLimit)}',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primary),
+                  ),
                 ],
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary))),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                ),
                 ElevatedButton(
                   onPressed: () {
                     AppData().updateLimit(currentAppData.appName, newLimit);
                     Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${currentAppData.appName} limit updated'), backgroundColor: AppColors.primary));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${currentAppData.appName} limit updated'),
+                        backgroundColor: AppColors.primary,
+                      ),
+                    );
                     setState(() {});
                   },
                   child: const Text('Save'),
@@ -244,20 +297,38 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
     );
   }
 
-  // FIX 1: Icon ab hamesha Primary Green color mein aayega (Design System Rule #5)
   Widget _getAppIcon(String appName) {
-    IconData iconData;
+    final FaIconData iconData;
+
     switch (appName.toLowerCase()) {
-      case 'instagram': iconData = FontAwesomeIcons.instagram; break;
-      case 'tiktok': iconData = FontAwesomeIcons.tiktok; break;
-      case 'youtube': iconData = FontAwesomeIcons.youtube; break;
-      case 'whatsapp': iconData = FontAwesomeIcons.whatsapp; break;
-      case 'facebook': iconData = FontAwesomeIcons.facebook; break;
-      case 'twitter / x': case 'twitter': iconData = FontAwesomeIcons.xTwitter; break;
-      case 'snapchat': iconData = FontAwesomeIcons.snapchat; break;
-      default: iconData = Icons.apps;
+      case 'instagram':
+        iconData = FontAwesomeIcons.instagram;
+        break;
+      case 'tiktok':
+        iconData = FontAwesomeIcons.tiktok;
+        break;
+      case 'youtube':
+        iconData = FontAwesomeIcons.youtube;
+        break;
+      case 'whatsapp':
+        iconData = FontAwesomeIcons.whatsapp;
+        break;
+      case 'facebook':
+        iconData = FontAwesomeIcons.facebook;
+        break;
+      case 'twitter / x':
+      case 'twitter':
+      case 'x':
+        iconData = FontAwesomeIcons.xTwitter;
+        break;
+      case 'snapchat':
+        iconData = FontAwesomeIcons.snapchat;
+        break;
+      default:
+        iconData = FontAwesomeIcons.mobileScreen;
     }
-    return Icon(iconData, color: AppColors.primary, size: 32);
+
+    return FaIcon(iconData, color: AppColors.primary, size: 32);
   }
 
   String _formatMinutes(int minutes) {

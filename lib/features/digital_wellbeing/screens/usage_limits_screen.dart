@@ -114,18 +114,37 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
 
   // Helper: Returns specific icon in Primary Green
   Widget _getAppIcon(String appName) {
-    IconData iconData;
+    final FaIconData iconData; // Changed to FaIconData
+
     switch (appName.toLowerCase()) {
-      case 'instagram': iconData = FontAwesomeIcons.instagram; break;
-      case 'tiktok': iconData = FontAwesomeIcons.tiktok; break;
-      case 'youtube': iconData = FontAwesomeIcons.youtube; break;
-      case 'whatsapp': iconData = FontAwesomeIcons.whatsapp; break;
-      case 'facebook': iconData = FontAwesomeIcons.facebook; break;
-      case 'twitter / x': case 'twitter': iconData = FontAwesomeIcons.xTwitter; break;
-      case 'snapchat': iconData = FontAwesomeIcons.snapchat; break;
-      default: iconData = Icons.apps;
+      case 'instagram':
+        iconData = FontAwesomeIcons.instagram;
+        break;
+      case 'tiktok':
+        iconData = FontAwesomeIcons.tiktok;
+        break;
+      case 'youtube':
+        iconData = FontAwesomeIcons.youtube;
+        break;
+      case 'whatsapp':
+        iconData = FontAwesomeIcons.whatsapp;
+        break;
+      case 'facebook':
+        iconData = FontAwesomeIcons.facebook;
+        break;
+      case 'twitter / x':
+      case 'twitter':
+      case 'x':
+        iconData = FontAwesomeIcons.xTwitter;
+        break;
+      case 'snapchat':
+        iconData = FontAwesomeIcons.snapchat;
+        break;
+      default:
+        iconData = FontAwesomeIcons.mobileScreen;
     }
-    return Icon(iconData, color: AppColors.primary, size: 22);
+
+    return FaIcon(iconData, color: AppColors.primary, size: 22); // Changed to FaIcon
   }
 
   String _formatMinutes(int minutes) {

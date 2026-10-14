@@ -4,17 +4,8 @@ import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'tracked_apps_screen.dart';
 import 'usage_limits_screen.dart';
 
-// StatefulWidget mein badla taake toggle button kaam kar sake
-class SettingsMenuScreen extends StatefulWidget {
+class SettingsMenuScreen extends StatelessWidget {
   const SettingsMenuScreen({super.key});
-
-  @override
-  State<SettingsMenuScreen> createState() => _SettingsMenuScreenState();
-}
-
-class _SettingsMenuScreenState extends State<SettingsMenuScreen> {
-  // Toggle button ki state ko save karne ke liye variable
-  bool _isGentleReminderOn = true;
 
   @override
   Widget build(BuildContext context) {
@@ -59,67 +50,6 @@ class _SettingsMenuScreenState extends State<SettingsMenuScreen> {
                   MaterialPageRoute(builder: (context) => const UsageLimitsScreen()),
                 );
               },
-            ),
-
-            const SizedBox(height: 32),
-
-            Text('Notifications', style: AppTypography.h3),
-            const SizedBox(height: 16),
-
-            // Gentle Reminders Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.border, width: 1),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.mint,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.notifications_active_outlined, color: AppColors.primary, size: 24),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gentle Reminders',
-                          style: AppTypography.body.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Get notified when you reach 80% of your limit',
-                          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // ✅ FIX: Toggle Button ab functional hai
-                  Switch(
-                    value: _isGentleReminderOn,
-                    activeColor: AppColors.primary,      // Thumb color (ON)
-                    activeTrackColor: AppColors.sage,    // Track color (ON)
-                    inactiveThumbColor: AppColors.sage,  // Thumb color (OFF)
-                    inactiveTrackColor: AppColors.border,// Track color (OFF)
-                    onChanged: (bool value) {
-                      setState(() {
-                        _isGentleReminderOn = value; // State update karega
-                      });
-                    },
-                  ),
-                ],
-              ),
             ),
           ],
         ),

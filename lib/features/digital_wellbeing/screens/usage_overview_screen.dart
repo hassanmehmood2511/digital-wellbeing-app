@@ -3,10 +3,9 @@ import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'package:digital_wellbeing_app/data/app_data.dart';
 import 'package:digital_wellbeing_app/models/app_usage.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'app_usage_detail_screen.dart';
-import 'settings_menu_screen.dart';
 import 'tracked_apps_screen.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class UsageOverviewScreen extends StatefulWidget {
   const UsageOverviewScreen({super.key});
@@ -17,10 +16,14 @@ class UsageOverviewScreen extends StatefulWidget {
 
 class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
   bool _showBreakReminder = true;
+  bool _gentleRemindersEnabled = true;
 
   @override
   Widget build(BuildContext context) {
     final apps = AppData().apps.where((app) => app.isTracked).toList();
+    final totalUsage = apps.fold<int>(0, (sum, app) => sum + app.usageMinutes);
+    final totalLimit = apps.fold<int>(0, (sum, app) => sum + app.dailyLimitMinutes);
+    final overallPercentage = totalLimit > 0 ? (totalUsage / totalLimit).clamp(0.0, 1.5) : 0.0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -28,17 +31,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         title: const Text('Screen Time'),
         backgroundColor: AppColors.background,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: AppColors.primary),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsMenuScreen()),
-              ).then((_) => setState(() {}));
-            },
-          ),
-        ],
+        // Settings icon removed from here as requested
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
@@ -47,10 +40,19 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
           children: [
             _buildSuccessCard(),
             const SizedBox(height: 24),
+
+            // ✅ CORRECT: We just CALL the function here, we don't define it
+            _buildLiveUsageBar(totalUsage, totalLimit, overallPercentage),
+            const SizedBox(height: 24),
+
+            // Gentle Reminders Toggle (Quick Access)
+            _buildGentleRemindersCard(),
+            const SizedBox(height: 24),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Selected Apps', style: AppTypography.h3),
+                Expanded(child: Text('Selected Apps', style: AppTypography.h3)),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -92,6 +94,125 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     );
   }
 
+  // ✅ FUNCTION DEFINITION: This belongs OUTSIDE the build method
+  Widget _buildLiveUsageBar(int totalUsage, int totalLimit, double percentage) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded( // ✅ FIX: Prevents yellow/black overflow box on mobile
+                child: Text(
+                  'Today\'s Total Usage',
+                  style: AppTypography.h3.copyWith(fontSize: 18),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible( // ✅ FIX: Prevents yellow/black overflow box on mobile
+                child: Text(
+                  '${_formatMinutes(totalUsage)} / ${_formatMinutes(totalLimit)}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: percentage >= 1.0 ? AppColors.primary : AppColors.secondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: percentage.clamp(0.0, 1.0),
+              backgroundColor: AppColors.border,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                percentage >= 1.0 ? AppColors.primary : AppColors.secondary,
+              ),
+              minHeight: 12,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            percentage >= 1.0
+                ? '⚠️ You\'ve exceeded your total daily limit!'
+                : '${(percentage * 100).toStringAsFixed(0)}% of daily limit used',
+            style: AppTypography.small.copyWith(
+              color: percentage >= 1.0 ? AppColors.primary : AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGentleRemindersCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.mint,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.notifications_active_outlined, color: AppColors.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Gentle Reminders',
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Get notified at 80% of your limit',
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _gentleRemindersEnabled,
+            activeColor: AppColors.primary,
+            activeTrackColor: AppColors.sage,
+            inactiveThumbColor: AppColors.sage,
+            inactiveTrackColor: AppColors.border,
+            onChanged: (bool value) {
+              setState(() {
+                _gentleRemindersEnabled = value;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSuccessCard() {
     final apps = AppData().apps;
     final overLimitApps = apps.where((app) => app.usageMinutes > app.dailyLimitMinutes).toList();
@@ -100,8 +221,8 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isAnyOverLimit ? AppColors.mint : AppColors.mint, // Using mint for soft surface
-        borderRadius: BorderRadius.circular(24), // Large radius for cards
+        color: isAnyOverLimit ? AppColors.mint : AppColors.mint,
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Row(
@@ -159,18 +280,17 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(24), // Card radius 24px
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Row(
           children: [
-            // Icon Container: Mint background, Primary Green icon (Strict Design System)
             Container(
               width: 48,
               height: 48,
               decoration: BoxDecoration(
                 color: AppColors.mint,
-                borderRadius: BorderRadius.circular(12), // Small component radius
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Center(child: _getAppIcon(appName)),
             ),
@@ -207,26 +327,45 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     );
   }
 
-  // Strict Green Palette Icons
   Widget _getAppIcon(String appName) {
-    IconData iconData;
+    final FaIconData iconData;
+
     switch (appName.toLowerCase()) {
-      case 'instagram': iconData = FontAwesomeIcons.instagram; break;
-      case 'tiktok': iconData = FontAwesomeIcons.tiktok; break;
-      case 'youtube': iconData = FontAwesomeIcons.youtube; break;
-      case 'whatsapp': iconData = FontAwesomeIcons.whatsapp; break;
-      case 'facebook': iconData = FontAwesomeIcons.facebook; break;
-      case 'twitter / x': case 'twitter': iconData = FontAwesomeIcons.xTwitter; break;
-      case 'snapchat': iconData = FontAwesomeIcons.snapchat; break;
-      default: iconData = Icons.apps;
+      case 'instagram':
+        iconData = FontAwesomeIcons.instagram;
+        break;
+      case 'tiktok':
+        iconData = FontAwesomeIcons.tiktok;
+        break;
+      case 'youtube':
+        iconData = FontAwesomeIcons.youtube;
+        break;
+      case 'whatsapp':
+        iconData = FontAwesomeIcons.whatsapp;
+        break;
+      case 'facebook':
+        iconData = FontAwesomeIcons.facebook;
+        break;
+      case 'twitter / x':
+      case 'twitter':
+      case 'x':
+        iconData = FontAwesomeIcons.xTwitter;
+        break;
+      case 'snapchat':
+        iconData = FontAwesomeIcons.snapchat;
+        break;
+      default:
+        iconData = FontAwesomeIcons.mobileScreen;
     }
-    return Icon(iconData, color: AppColors.primary, size: 22); // Primary Green
+
+    return FaIcon(iconData, color: AppColors.primary, size: 22);
   }
+
   Widget _buildDailyUsageChart() {
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
     final weeklyUsageMinutes = AppData().getWeeklyUsage();
     final maxMinutes = weeklyUsageMinutes.reduce((a, b) => a > b ? a : b).toDouble();
-    final chartMaxHeight = 100.0; // Thora height barhayi hai better look ke liye
+    final chartMaxHeight = 100.0;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -238,8 +377,6 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Chart Title
-          // Bars
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: days.asMap().entries.map((entry) {
@@ -249,18 +386,17 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               double hours = minutes / 60.0;
               double barHeight = maxMinutes > 0 ? (minutes / maxMinutes) * chartMaxHeight : 0;
 
-              // Performance-based Color Logic (Design System Rule #7)
               Color barColor;
               if (minutes == 0) {
-                barColor = AppColors.border; // No usage = Very subtle
+                barColor = AppColors.border;
               } else if (index == days.length - 1) {
-                barColor = AppColors.primary; // Today = Primary Green (Emphasized)
+                barColor = AppColors.primary;
               } else if (minutes >= maxMinutes * 0.8) {
-                barColor = AppColors.primary; // High usage = Primary Green
+                barColor = AppColors.primary;
               } else if (minutes >= maxMinutes * 0.5) {
-                barColor = AppColors.secondary; // Medium usage = Secondary Green
+                barColor = AppColors.secondary;
               } else {
-                barColor = AppColors.lightGreen; // Low usage = Light Green
+                barColor = AppColors.lightGreen;
               }
 
               return Expanded(
@@ -272,11 +408,11 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Container(
-                            width: 28, // Thora wide kiya hai
-                            height: barHeight.clamp(4.0, chartMaxHeight), // Minimum 4px height
+                            width: 28,
+                            height: barHeight.clamp(4.0, chartMaxHeight),
                             decoration: BoxDecoration(
                               color: barColor,
-                              borderRadius: BorderRadius.circular(8), // Rounded corners
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                         ],

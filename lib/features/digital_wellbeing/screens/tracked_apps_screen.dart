@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // NEW IMPORT
 import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'package:digital_wellbeing_app/data/app_data.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TrackedAppsScreen extends StatefulWidget {
   const TrackedAppsScreen({super.key});
@@ -14,7 +14,7 @@ class TrackedAppsScreen extends StatefulWidget {
 class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
   @override
   Widget build(BuildContext context) {
-    final apps = AppData().apps; // Global data se le rahe hain
+    final apps = AppData().apps;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -31,7 +31,6 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
           return _buildAppListItem(app);
         },
       ),
-      // NAYA: Floating Action Button to Add New App
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddAppDialog(context),
         backgroundColor: AppColors.primary,
@@ -58,6 +57,7 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
               color: AppColors.mint,
               borderRadius: BorderRadius.circular(12),
             ),
+            // UPDATED: Now uses real brand icons
             child: Center(child: _getAppIcon(app.appName)),
           ),
           const SizedBox(width: 16),
@@ -77,7 +77,7 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             onChanged: (bool? value) {
               setState(() {
-                AppData().toggleTracking(app.appName); // Global data update
+                AppData().toggleTracking(app.appName);
               });
             },
           ),
@@ -86,7 +86,6 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
     );
   }
 
-  // NAYA: Add App Dialog
   void _showAddAppDialog(BuildContext context) {
     final TextEditingController _controller = TextEditingController();
 
@@ -116,7 +115,7 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
                 if (_controller.text.trim().isNotEmpty) {
                   AppData().addNewApp(_controller.text.trim());
                   Navigator.pop(context);
-                  setState(() {}); // Refresh list
+                  setState(() {});
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -131,18 +130,38 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
     );
   }
 
+  // UPDATED: Real Brand Icons using FontAwesome
+  // UPDATED for v11.0.0: Use FaIconData instead of IconData
   Widget _getAppIcon(String appName) {
-    IconData iconData;
+    final FaIconData iconData; // <-- Changed from IconData to FaIconData
     switch (appName.toLowerCase()) {
-      case 'instagram': iconData = FontAwesomeIcons.instagram; break;
-      case 'tiktok': iconData = FontAwesomeIcons.tiktok; break;
-      case 'youtube': iconData = FontAwesomeIcons.youtube; break;
-      case 'whatsapp': iconData = FontAwesomeIcons.whatsapp; break;
-      case 'facebook': iconData = FontAwesomeIcons.facebook; break;
-      case 'twitter / x': case 'twitter': iconData = FontAwesomeIcons.xTwitter; break;
-      case 'snapchat': iconData = FontAwesomeIcons.snapchat; break;
-      default: iconData = Icons.apps; // Naye apps ke liye generic icon
+      case 'instagram':
+        iconData = FontAwesomeIcons.instagram;
+        break;
+      case 'tiktok':
+        iconData = FontAwesomeIcons.tiktok;
+        break;
+      case 'youtube':
+        iconData = FontAwesomeIcons.youtube;
+        break;
+      case 'whatsapp':
+        iconData = FontAwesomeIcons.whatsapp;
+        break;
+      case 'facebook':
+        iconData = FontAwesomeIcons.facebook;
+        break;
+      case 'twitter / x':
+      case 'twitter':
+      case 'x':
+        iconData = FontAwesomeIcons.xTwitter;
+        break;
+      case 'snapchat':
+        iconData = FontAwesomeIcons.snapchat;
+        break;
+      default:
+        iconData = FontAwesomeIcons.mobileScreen;
     }
-    return Icon(iconData, color: AppColors.primary, size: 22);
+    return FaIcon(iconData, color: AppColors.primary, size: 22);
   }
+
 }
