@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/challenges/challenges_controller.dart';
 import '../../features/challenges/challenges_screen.dart';
+import '../../features/digital_wellbeing/screens/usage_overview_screen.dart';
 import '../../features/groups/groups_controller.dart';
 import '../../features/groups/groups_screen.dart';
 import '../../features/settings/settings_controller.dart';
@@ -56,11 +57,7 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             message: 'Your progress will be shown here.',
             icon: Icons.insights_rounded,
           ),
-          const _DestinationPlaceholder(
-            title: 'Apps',
-            message: 'Apps you choose to manage with Behtar will appear here.',
-            icon: Icons.phonelink_lock_rounded,
-          ),
+          const UsageOverviewScreen(),
           ProfileScreen(controller: widget.settingsController),
         ],
       ),
