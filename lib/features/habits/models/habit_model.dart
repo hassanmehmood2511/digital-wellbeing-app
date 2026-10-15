@@ -9,6 +9,7 @@ class HabitModel {
   final int completedCount;
   final int currentStreak;
   final String icon;
+  final String priority;
 
   const HabitModel({
     required this.habitId,
@@ -21,6 +22,7 @@ class HabitModel {
     required this.completedCount,
     required this.currentStreak,
     required this.icon,
+    this.priority = 'Medium',
   });
 
   double get progress {
@@ -44,6 +46,7 @@ class HabitModel {
     int? completedCount,
     int? currentStreak,
     String? icon,
+    String? priority,
   }) {
     return HabitModel(
       habitId: habitId ?? this.habitId,
@@ -56,6 +59,7 @@ class HabitModel {
       completedCount: completedCount ?? this.completedCount,
       currentStreak: currentStreak ?? this.currentStreak,
       icon: icon ?? this.icon,
+      priority: priority ?? this.priority,
     );
   }
 }

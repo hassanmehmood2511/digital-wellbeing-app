@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -19,9 +18,11 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _targetController = TextEditingController(text: '1');
+  final _customCategoryController = TextEditingController();
 
   String _selectedCategory = 'Health';
   String _selectedFrequency = 'Daily';
+  String _selectedPriority = 'Medium';
   String _selectedIcon = '🌱';
 
   final List<String> _categories = [
@@ -35,6 +36,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
   final List<String> _frequencies = ['Daily', 'Weekly', 'Weekdays', 'Weekends'];
 
+  final List<String> _priorities = ['High', 'Medium', 'Low'];
+
   final List<String> _icons = ['🌱', '📚', '🏃', '🌙', '📖', '🧘', '💧', '🎯'];
 
   @override
@@ -42,6 +45,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     _nameController.dispose();
     _descriptionController.dispose();
     _targetController.dispose();
+    _customCategoryController.dispose();
     super.dispose();
   }
 
@@ -59,13 +63,18 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
       return;
     }
 
+    final category = _selectedCategory == 'Other'
+        ? _customCategoryController.text.trim()
+        : _selectedCategory;
+
     final habit = HabitModel(
       habitId: 'habit_${DateTime.now().millisecondsSinceEpoch}',
       ownerUid: 'user_001',
       title: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      category: _selectedCategory,
+      category: category,
       frequency: _selectedFrequency,
+      priority: _selectedPriority,
       targetCount: target,
       completedCount: 0,
       currentStreak: 0,
@@ -195,7 +204,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 ),
                 decoration: _inputDecoration(),
                 items: _categories.map((category) {
-                  return DropdownMenuItem(
+                  return DropdownMenuItem<String>(
                     value: category,
                     child: Text(
                       category,
@@ -213,6 +222,38 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                   });
                 },
               ),
+
+              if (_selectedCategory == 'Other') ...[
+                const SizedBox(height: AppSpacing.md),
+
+                Text(
+                  'Custom category',
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+
+                TextFormField(
+                  controller: _customCategoryController,
+                  textInputAction: TextInputAction.next,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                  decoration: _inputDecoration(
+                    hintText: 'e.g. Personal Growth',
+                  ),
+                  validator: (value) {
+                    if (_selectedCategory == 'Other' &&
+                        (value == null || value.trim().isEmpty)) {
+                      return 'Please enter a custom category.';
+                    }
+
+                    return null;
+                  },
+                ),
+              ],
 
               const SizedBox(height: AppSpacing.lg),
 
@@ -233,7 +274,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 ),
                 decoration: _inputDecoration(),
                 items: _frequencies.map((frequency) {
-                  return DropdownMenuItem(
+                  return DropdownMenuItem<String>(
                     value: frequency,
                     child: Text(
                       frequency,
@@ -248,6 +289,45 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
                   setState(() {
                     _selectedFrequency = value;
+                  });
+                },
+              ),
+
+              // Priority dropdown
+              const SizedBox(height: AppSpacing.lg),
+
+              Text(
+                'Priority',
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+
+              DropdownButtonFormField<String>(
+                initialValue: _selectedPriority,
+                dropdownColor: AppColors.background,
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+                decoration: _inputDecoration(),
+                items: _priorities.map((priority) {
+                  return DropdownMenuItem<String>(
+                    value: priority,
+                    child: Text(
+                      priority,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    _selectedPriority = value;
                   });
                 },
               ),
@@ -360,10 +440,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         color: AppColors.textSecondary,
       ),
       filled: true,
-
-      // Updated field background to match the icon's mint background.
       fillColor: AppColors.mint,
-
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.base,
         vertical: AppSpacing.md,

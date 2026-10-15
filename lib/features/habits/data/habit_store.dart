@@ -10,7 +10,39 @@ class HabitStore extends ChangeNotifier {
 
   final List<HabitModel> _habits = List<HabitModel>.from(MockHabits.habits);
 
-  List<HabitModel> get habits => List.unmodifiable(_habits);
+  List<HabitModel> get habits {
+    final indexedHabits = List.generate(
+      _habits.length,
+      (index) => (index: index, habit: _habits[index]),
+    );
+
+    int priorityRank(String priority) {
+      switch (priority.toLowerCase()) {
+        case 'high':
+          return 0;
+        case 'medium':
+          return 1;
+        case 'low':
+          return 2;
+        default:
+          return 1;
+      }
+    }
+
+    indexedHabits.sort((a, b) {
+      final priorityComparison = priorityRank(
+        a.habit.priority,
+      ).compareTo(priorityRank(b.habit.priority));
+
+      if (priorityComparison != 0) {
+        return priorityComparison;
+      }
+
+      return a.index.compareTo(b.index);
+    });
+
+    return List.unmodifiable(indexedHabits.map((item) => item.habit));
+  }
 
   void addHabit(HabitModel habit) {
     _habits.add(habit);
