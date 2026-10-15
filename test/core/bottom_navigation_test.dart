@@ -111,7 +111,7 @@ void main() {
     await tester.tap(find.text('Apps'));
     await tester.pumpAndSettle();
     expect(
-      find.text('Apps you choose to manage with Behtar will appear here.'),
+      find.text('Screen Time'),
       findsOneWidget,
     );
 
