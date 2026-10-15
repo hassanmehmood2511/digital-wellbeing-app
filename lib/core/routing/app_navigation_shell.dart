@@ -7,6 +7,7 @@ import '../../features/groups/groups_controller.dart';
 import '../../features/groups/groups_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
+import '../../features/habits/presentation/screens/habit_list_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/behtar_bottom_navigation_bar.dart';
 
@@ -21,8 +22,10 @@ class AppNavigationShell extends StatefulWidget {
 
 class _AppNavigationShellState extends State<AppNavigationShell> {
   int _currentIndex = 0;
+
   late final ChallengesController _challengesController =
       ChallengesController();
+
   late final GroupsController _groupsController = GroupsController();
 
   @override
@@ -43,15 +46,16 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             message: 'Your day starts with one small step.',
             icon: Icons.home_rounded,
           ),
-          const _DestinationPlaceholder(
-            title: 'Habits',
-            message: 'Your habits will appear here.',
-            icon: Icons.checklist_rounded,
-          ),
+
+          // Habit feature connected to the navigation shell.
+          const HabitListScreen(),
+
+          // Challenges feature from dev.
           ChallengesScreen(
             controller: _challengesController,
             onOpenGroups: _openGroups,
           ),
+
           const _DestinationPlaceholder(
             title: 'Progress',
             message: 'Your progress will be shown here.',
