@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
-import 'features/digital_wellbeing/screens/usage_overview_screen.dart';
 
+import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'features/settings/settings_controller.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/splashscreen/splash_screen.dart';
 
 void main() {
   runApp(const BehtarApp());
@@ -38,7 +37,9 @@ class _BehtarAppState extends State<BehtarApp> {
       title: 'Behtar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: SettingsScreen(controller: _settingsController),
+      home: SplashScreen(
+       onFinished: () {},
+      ),
     );
   }
 }
