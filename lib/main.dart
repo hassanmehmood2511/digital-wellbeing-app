@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/routing/app_navigation_shell.dart';
+import 'features/rewards/rewards_store.dart';
 import 'features/settings/settings_controller.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await PointsStore.instance.initialize();
   runApp(const BehtarApp());
 }
 

@@ -60,21 +60,23 @@ class HabitStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  void completeHabit(String habitId) {
+  HabitModel? completeHabit(String habitId) {
     final index = _habits.indexWhere((habit) => habit.habitId == habitId);
 
-    if (index == -1) return;
+    if (index == -1) return null;
 
     final habit = _habits[index];
 
-    if (habit.isCompleted) return;
+    if (habit.isCompleted) return null;
 
-    _habits[index] = habit.copyWith(
+    final updatedHabit = habit.copyWith(
       completedCount: habit.completedCount + 1,
       currentStreak: habit.currentStreak + 1,
     );
+    _habits[index] = updatedHabit;
 
     notifyListeners();
+    return updatedHabit.isCompleted ? updatedHabit : null;
   }
 
   void deleteHabit(String habitId) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../features/settings/settings_widgets.dart';
+import '../rewards/reward_completion_service.dart';
 import 'challenge.dart';
 import 'challenges_controller.dart';
 
@@ -691,37 +692,20 @@ class ChallengeDetailsScreen extends StatelessWidget {
     Challenge before,
     int day,
   ) async {
-    if (!before.isJoined ||
-        before.dailyProgress[day] >= 1 ||
-        before.startsOn.add(Duration(days: day)).isAfter(
-          _dateOnly(DateTime.now()),
-        )) {
+    final current = controller.challengeById(before.id);
+    if (current == null ||
+        current.isComplete ||
+        !current.isJoined ||
+        current.dailyProgress[day] >= 1 ||
+        current.startsOn
+            .add(Duration(days: day))
+            .isAfter(_dateOnly(DateTime.now()))) {
       return;
     }
-    controller.addDailyProgress(before.id, day);
-    final updated = controller.challengeById(before.id);
-    if (updated?.isComplete == true && !before.isComplete && context.mounted) {
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          icon: const Icon(
-            Icons.celebration_rounded,
-            color: BehtarColors.primary,
-            size: 36,
-          ),
-          title: const Text('A week well spent'),
-          content: const Text(
-            'You completed all 7 days. Celebrate this small step and keep '
-            'building on it.',
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Done'),
-            ),
-          ],
-        ),
-      );
+    controller.addDailyProgress(current.id, day);
+    final updated = controller.challengeById(current.id);
+    if (updated?.isComplete == true && !current.isComplete) {
+      await awardChallengeCompletion(context, challenge: updated!);
     } else if (context.mounted) {
       showSettingsMessage(context, 'Day ${day + 1} progress updated.');
     }
@@ -903,7 +887,9 @@ class _ChallengeVisibilityTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ChallengeTag(
-      icon: challenge.isPrivate ? Icons.lock_outline_rounded : Icons.public_rounded,
+      icon: challenge.isPrivate
+          ? Icons.lock_outline_rounded
+          : Icons.public_rounded,
       label: challenge.isPrivate ? 'Private' : 'Public',
     );
   }
