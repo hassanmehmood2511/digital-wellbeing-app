@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Behtar app splash screen.
-///
-/// Displays the animated logo, app tagline, splash illustration, feature
-
 class SplashScreen extends StatefulWidget {
   final VoidCallback onFinished;
 
@@ -19,14 +15,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  // Behtar brand colors.
   static const Color primaryGreen = Color(0xFF2E7D32);
-  static const Color secondaryGreen = Color(0xFF4CAF50);
-  static const Color lightGreen = Color(0xFF81C784);
   static const Color sageGreen = Color(0xFFA5D6A7);
-  static const Color mint = Color(0xFFE8F5E9);
   static const Color background = Color(0xFFF5FAF5);
-  static const Color white = Color(0xFFFFFFFF);
   static const Color primaryText = Color(0xFF1B4332);
   static const Color secondaryText = Color(0xFF5C6B63);
   static const Color borderColor = Color(0xFFDDE8DD);
@@ -35,49 +26,44 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _blinkController;
   late final Animation<double> _blink;
 
+  bool _finished = false;
+
   @override
   void initState() {
     super.initState();
-    _initializeProgressAnimation();
-    _initializeBlinkAnimation();
-  }
 
-  /// Starts the five-second loading progress and notifies the parent on finish.
-  void _initializeProgressAnimation() {
     _progressController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.completed && mounted) {
-          widget.onFinished();
-        }
-      });
+    );
+
+    _progressController.addStatusListener((status) {
+      if (status == AnimationStatus.completed && !_finished && mounted) {
+        _finished = true;
+        widget.onFinished();
+      }
+    });
 
     _progressController.forward();
-  }
 
-  /// Creates a quick blink followed by a longer pause between blinks.
-  void _initializeBlinkAnimation() {
     _blinkController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1250),
     );
 
     _blink = TweenSequence<double>([
-      TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 1.0, end: 0.08).chain(
-          CurveTween(curve: Curves.easeIn),
-        ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1, end: 0.08)
+            .chain(CurveTween(curve: Curves.easeIn)),
         weight: 5,
       ),
-      TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 0.08, end: 1.0).chain(
-          CurveTween(curve: Curves.easeOut),
-        ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.08, end: 1)
+            .chain(CurveTween(curve: Curves.easeOut)),
         weight: 5,
       ),
-      TweenSequenceItem<double>(
-        tween: ConstantTween<double>(1.0),
+      TweenSequenceItem(
+        tween: ConstantTween<double>(1),
         weight: 90,
       ),
     ]).animate(_blinkController);
@@ -99,175 +85,179 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Paint the decorative background separately from animated content.
           const RepaintBoundary(
-            child: CustomPaint(
-              painter: _BackgroundPainter(
-                lightGreen: lightGreen,
-                sageGreen: sageGreen,
-                mint: mint,
-              ),
-            ),
+            child: CustomPaint(painter: _BackgroundPainter()),
           ),
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final bool isSmallScreen = constraints.maxHeight < 680;
+                final double width = constraints.maxWidth;
+                final double height = constraints.maxHeight;
 
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: isSmallScreen ? 8 : 12,
-                  ),
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 1),
+                // Scale is derived from both width and height,
+                // so the layout fits correctly on every device.
+                final double scale =
+                    (width / 390 < height / 800 ? width / 390 : height / 800)
+                        .clamp(0.7, 1.4)
+                        .toDouble();
 
-                      // Animated Behtar logo.
-                      RepaintBoundary(child: _buildLogo()),
-                      SizedBox(height: isSmallScreen ? 16 : 24),
+                final double contentWidth = (width < 520 ? width : 520) - 32;
 
-                      // App name.
-                      Text(
-                        'Behtar',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: isSmallScreen ? 42 : 48,
-                          fontWeight: FontWeight.w700,
-                          height: 1.15,
-                          letterSpacing: -1.5,
-                          color: primaryText,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Short app tagline.
-                      Text(
-                        'Turn Small Steps Into Big Results',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: isSmallScreen ? 12 : 14,
-                          fontWeight: FontWeight.w400,
-                          color: secondaryText,
-                          height: 1.6,
-                        ),
-                      ),
-
-                      const SizedBox(height: 1),
-
-                      // Splash illustration.
-                      Center(
-                        child: Image.asset(
-                          'assets/images/Splash-icon.png',
-                          width: 220,
-                          height: 220,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-
-                      const SizedBox(height: 1),
-
-                      // Three core app benefits: Track, Improve, and Build.
-                      Transform.translate(
-                        offset: const Offset(0, 25),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            FeatureItem(
-                              icon: Icons.search_rounded,
-                              title: 'Track',
-                            ),
-                            FeatureItem(
-                              icon: Icons.memory_rounded,
-                              title: 'Improve',
-                            ),
-                            FeatureItem(
-                              icon: Icons.verified_user_rounded,
-                              title: 'Build',
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: isSmallScreen ? 22 : 32),
-
-                      // Animated loading progress bar.
-                      Transform.translate(
-                        offset: const Offset(0, 20),
-                        child: SizedBox(
-                          width: 250,
-                          height: 6,
-                          child: AnimatedBuilder(
-                            animation: _progressController,
-                            builder: (context, child) {
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: LinearProgressIndicator(
-                                  value: _progressController.value,
-                                  minHeight: 5,
-                                  backgroundColor: borderColor,
-                                  valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
-                                    primaryGreen,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: isSmallScreen ? 12 : 20),
-
-                      // Loading status text.
-                      Transform.translate(
-                        offset: const Offset(0, 20),
-                        child: Text(
-                          'Loading...',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.3,
-                            color: primaryGreen,
-                          ),
-                        ),
-                      ),
-
-                      const Spacer(flex: 1),
-
-                      // Footer branding and app version.
-                      Transform.translate(
-                        offset: const Offset(0, -7),
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    // FittedBox: if the content is too large for any screen,
+                    // it shrinks automatically, so there is no overflow.
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: contentWidth,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            // Logo with blinking eyes
+                            _buildLogo(scale),
+                            SizedBox(height: 18 * scale),
+
+                            // App name
+                            Text(
+                              'Behtar',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 44 * scale,
+                                fontWeight: FontWeight.w700,
+                                height: 1.12,
+                                letterSpacing: -1.2 * scale,
+                                color: primaryText,
+                              ),
+                            ),
+                            SizedBox(height: 8 * scale),
+
+                            // Tagline
+                            Text(
+                              'Turn Small Steps Into Big Results',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14 * scale,
+                                height: 1.45,
+                                color: secondaryText,
+                              ),
+                            ),
+                            SizedBox(height: 22 * scale),
+
+                            // Illustration
+                            SizedBox(
+                              width: 270 * scale,
+                              height: 200 * scale,
+                              child: Image.asset(
+                                'assets/images/Splash-icon.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(
+                                      Icons.image_not_supported_outlined,
+                                      size: 32,
+                                      color: secondaryText,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 22 * scale),
+
+                            // Track, Improve, Build
+                            SizedBox(
+                              width: 300 * scale,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: FeatureItem(
+                                      icon: Icons.track_changes_rounded,
+                                      title: 'Track',
+                                      scale: scale,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: FeatureItem(
+                                      icon: Icons.trending_up_rounded,
+                                      title: 'Improve',
+                                      scale: scale,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: FeatureItem(
+                                      icon: Icons.flag_rounded,
+                                      title: 'Build',
+                                      scale: scale,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 28 * scale),
+
+                            // Loading bar
+                            SizedBox(
+                              width: 280 * scale,
+                              height: 6 * scale,
+                              child: AnimatedBuilder(
+                                animation: _progressController,
+                                builder: (context, child) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: LinearProgressIndicator(
+                                      value: _progressController.value,
+                                      minHeight: 6 * scale,
+                                      backgroundColor: borderColor,
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                        primaryGreen,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 12 * scale),
+
+                            // Loading text
+                            Text(
+                              'Loading...',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14 * scale,
+                                fontWeight: FontWeight.w600,
+                                color: primaryGreen,
+                              ),
+                            ),
+                            SizedBox(height: 28 * scale),
+
+                            // Footer
                             Text(
                               'Powered by AI',
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
-                                fontSize: 16,
+                                fontSize: 15 * scale,
                                 fontWeight: FontWeight.w600,
                                 color: primaryText,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Transform.translate(
-                              offset: const Offset(0, 5),
-                              child: Text(
-                                'Version 1.0',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: secondaryText,
-                                ),
+                            SizedBox(height: 4 * scale),
+                            Text(
+                              'Version 1.0',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12 * scale,
+                                color: secondaryText,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: isSmallScreen ? 8 : 16),
-                    ],
+                    ),
                   ),
                 );
               },
@@ -278,17 +268,17 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// Builds the logo frame and its two animated circular eyes.
-  Widget _buildLogo() {
-    Widget buildBlinkingEye(double left) {
+  // Animated Behtar logo.
+  Widget _buildLogo(double scale) {
+    Widget buildEye(double left) {
       return Positioned(
-        left: left,
-        top: 40,
+        left: left * scale,
+        top: 40 * scale,
         child: AnimatedBuilder(
           animation: _blink,
           child: Container(
-            width: 16,
-            height: 16,
+            width: 16 * scale,
+            height: 16 * scale,
             decoration: const BoxDecoration(
               color: Color(0xFF317E3D),
               shape: BoxShape.circle,
@@ -305,54 +295,53 @@ class _SplashScreenState extends State<SplashScreen>
       );
     }
 
-    return Container(
-      width: 92,
-      height: 147,
-      decoration: BoxDecoration(
-        color: white.withValues(alpha: 0.65),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: sageGreen.withValues(alpha: 0.55),
-          width: 1,
+    return SizedBox(
+      width: 92 * scale,
+      height: 147 * scale,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.65),
+          borderRadius: BorderRadius.circular(20 * scale),
+          border: Border.all(color: sageGreen.withValues(alpha: 0.55)),
+          boxShadow: [
+            BoxShadow(
+              color: primaryGreen.withValues(alpha: 0.07),
+              blurRadius: 24 * scale,
+              offset: Offset(0, 10 * scale),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: primaryGreen.withValues(alpha: 0.07),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Logo outline.
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFF317E3D),
-                width: 8,
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20 * scale),
+                border: Border.all(
+                  color: const Color(0xFF317E3D),
+                  width: 8 * scale,
+                ),
               ),
             ),
-          ),
-          // Eye positions match the original logo proportions.
-          buildBlinkingEye(22),
-          buildBlinkingEye(52),
-        ],
+            buildEye(22),
+            buildEye(52),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// A circular icon and label for one of the splash screen features.
+// Responsive feature icon and label.
 class FeatureItem extends StatelessWidget {
   final IconData icon;
   final String title;
+  final double scale;
 
   const FeatureItem({
     super.key,
     required this.icon,
     required this.title,
+    this.scale = 1,
   });
 
   static const Color primaryGreen = Color(0xFF2E7D32);
@@ -362,52 +351,46 @@ class FeatureItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: mint,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: borderColor,
-              width: 1,
+    final double iconSize = 48 * scale;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: iconSize,
+            height: iconSize,
+            decoration: BoxDecoration(
+              color: mint,
+              shape: BoxShape.circle,
+              border: Border.all(color: borderColor),
+            ),
+            child: Icon(icon, size: iconSize * 0.50, color: primaryGreen),
+          ),
+          SizedBox(height: 7 * scale),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              title,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12 * scale,
+                fontWeight: FontWeight.w600,
+                color: primaryText,
+              ),
             ),
           ),
-          child: Icon(
-            icon,
-            size: 24,
-            color: primaryGreen,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: primaryText,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-/// Draws the static decorative shapes behind the splash screen content.
+// Decorative background shapes.
 class _BackgroundPainter extends CustomPainter {
-  final Color lightGreen;
-  final Color sageGreen;
-  final Color mint;
-
-  const _BackgroundPainter({
-    required this.lightGreen,
-    required this.sageGreen,
-    required this.mint,
-  });
+  const _BackgroundPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -415,7 +398,7 @@ class _BackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 
-    // Soft organic shape in the top-left corner.
+    // Top-left organic shape.
     final Path topPath = Path()
       ..moveTo(0, 0)
       ..lineTo(size.width * 0.30, 0)
@@ -429,12 +412,12 @@ class _BackgroundPainter extends CustomPainter {
       )
       ..close();
 
-    paint.color = mint.withValues(alpha: 0.95);
+    paint.color = const Color(0xFFE8F5E9);
     canvas.drawPath(topPath, paint);
 
-    // Soft wave along the bottom edge.
+    // Bottom wave.
     final Path bottomWave = Path()
-      ..moveTo(0, size.height * 0.999)
+      ..moveTo(0, size.height)
       ..cubicTo(
         size.width * 0.25,
         size.height * 0.88,
@@ -452,32 +435,16 @@ class _BackgroundPainter extends CustomPainter {
         size.height * 0.88,
       )
       ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
       ..close();
 
-    paint.color = lightGreen.withValues(alpha: 0.20);
+    paint.color = const Color(0x3381C784);
     canvas.drawPath(bottomWave, paint);
 
-    // Decorative leaf near the bottom-right corner.
-    _drawLeaf(
-      canvas,
-      Offset(size.width * 0.92, size.height * 0.945),
-      0.85,
-      2.45,
-    );
-  }
-
-  /// Draws one decorative leaf and its central vein.
-  void _drawLeaf(
-    Canvas canvas,
-    Offset origin,
-    double scale,
-    double angle,
-  ) {
+    // Bottom-right decorative leaf.
     canvas.save();
-    canvas.translate(origin.dx, origin.dy);
-    canvas.rotate(angle);
-    canvas.scale(scale);
+    canvas.translate(size.width * 0.92, size.height * 0.945);
+    canvas.rotate(2.45);
+    canvas.scale(0.85);
 
     final Path leafPath = Path()
       ..moveTo(0, 0)
@@ -485,32 +452,19 @@ class _BackgroundPainter extends CustomPainter {
       ..quadraticBezierTo(25, -35, 0, 0)
       ..close();
 
-    final Paint leafPaint = Paint()
-      ..color = lightGreen.withValues(alpha: 0.48)
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-
-    canvas.drawPath(leafPath, leafPaint);
+    paint.color = const Color(0x7B81C784);
+    canvas.drawPath(leafPath, paint);
 
     final Paint veinPaint = Paint()
-      ..color = const Color(0xFF4CAF50).withValues(alpha: 0.45)
+      ..color = const Color(0x734CAF50)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true;
 
-    canvas.drawLine(
-      const Offset(0, 0),
-      const Offset(0, -61),
-      veinPaint,
-    );
-
+    canvas.drawLine(const Offset(0, 0), const Offset(0, -61), veinPaint);
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
-    return lightGreen != oldDelegate.lightGreen ||
-        sageGreen != oldDelegate.sageGreen ||
-        mint != oldDelegate.mint;
-  }
+  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) => false;
 }
