@@ -919,54 +919,54 @@ class _BackgroundPainter extends CustomPainter {
     paint.color = const Color(0xFFE8F5E9);
     canvas.drawPath(topPath, paint);
 
-    // // Bottom wave.
-    // final Path bottomWave = Path()
-    //   ..moveTo(0, size.height)
-    //   ..cubicTo(
-    //     size.width * 0.25,
-    //     size.height * 0.88,
-    //     size.width * 0.30,
-    //     size.height * 0.98,
-    //     size.width * 0.50,
-    //     size.height * 0.98,
-    //   )
-    //   ..cubicTo(
-    //     size.width * 0.70,
-    //     size.height * 0.98,
-    //     size.width * 0.80,
-    //     size.height * 0.88,
-    //     size.width,
-    //     size.height * 0.88,
-    //   )
-    //   ..lineTo(size.width, size.height)
-    //   ..close();
+    // Bottom wave.
+    final Path bottomWave = Path()
+      ..moveTo(0, size.height)
+      ..cubicTo(
+        size.width * 0.25,
+        size.height * 0.88,
+        size.width * 0.30,
+        size.height * 0.98,
+        size.width * 0.50,
+        size.height * 0.98,
+      )
+      ..cubicTo(
+        size.width * 0.70,
+        size.height * 0.98,
+        size.width * 0.80,
+        size.height * 0.88,
+        size.width,
+        size.height * 0.88,
+      )
+      ..lineTo(size.width, size.height)
+      ..close();
 
-    // paint.color = const Color(0x3381C784);
-    // canvas.drawPath(bottomWave, paint);
+    paint.color = const Color(0x3381C784);
+    canvas.drawPath(bottomWave, paint);
 
-    // // Bottom-right decorative leaf.
-    // canvas.save();
-    // canvas.translate(size.width * 0.92, size.height * 0.945);
-    // canvas.rotate(2.45);
-    // canvas.scale(0.85);
+    // Bottom-right decorative leaf.
+    canvas.save();
+    canvas.translate(size.width * 0.92, size.height * 0.945);
+    canvas.rotate(2.45);
+    canvas.scale(0.85);
 
-    // final Path leafPath = Path()
-    //   ..moveTo(0, 0)
-    //   ..quadraticBezierTo(-25, -34, 0, -70)
-    //   ..quadraticBezierTo(25, -35, 0, 0)
-    //   ..close();
+    final Path leafPath = Path()
+      ..moveTo(0, 0)
+      ..quadraticBezierTo(-25, -34, 0, -70)
+      ..quadraticBezierTo(25, -35, 0, 0)
+      ..close();
 
-    // paint.color = const Color(0x7B81C784);
-    // canvas.drawPath(leafPath, paint);
+    paint.color = const Color(0x7B81C784);
+    canvas.drawPath(leafPath, paint);
 
-    // final Paint veinPaint = Paint()
-    //   ..color = const Color(0x734CAF50)
-    //   ..strokeWidth = 1.2
-    //   ..style = PaintingStyle.stroke
-    //   ..isAntiAlias = true;
+    final Paint veinPaint = Paint()
+      ..color = const Color(0x734CAF50)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke
+      ..isAntiAlias = true;
 
-    // canvas.drawLine(const Offset(0, 0), const Offset(0, -61), veinPaint);
-    // canvas.restore();
+    canvas.drawLine(const Offset(0, 0), const Offset(0, -61), veinPaint);
+    canvas.restore();
   }
 
   @override

@@ -1,8 +1,9 @@
+
 import 'package:flutter/material.dart';
 
 import 'package:digital_wellbeing_app/core/theme/app_theme.dart';
 import 'package:digital_wellbeing_app/features/settings/settings_controller.dart';
-import 'package:digital_wellbeing_app/features/auth/signup-screen/signup_screen.dart';
+import 'package:digital_wellbeing_app/features/forgot_password_screen/forgot_password_screen.dart';
 
 void main() {
   runApp(const BehtarApp());
@@ -36,13 +37,9 @@ class _BehtarAppState extends State<BehtarApp> {
       title: 'Behtar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      // Temporarily showing the Sign Up screen for testing.
-      home: SignUpScreen(
-        // Phone is in full international format, e.g. +923001234567.
-        onSignUp: (name, email, phone, password) {
-          debugPrint('Sign up: $name | $email | $phone');
-        },
-      ),
+
+      // Temporarily showing the Forgot Password screen for testing.
+      home: const ForgotPasswordScreen(),
     );
   }
 }
