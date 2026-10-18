@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
-import 'features/digital_wellbeing/screens/usage_overview_screen.dart';
 
-import 'core/theme/app_theme.dart';
-import 'features/settings/settings_controller.dart';
-import 'features/settings/settings_screen.dart';
+import 'package:digital_wellbeing_app/core/theme/app_theme.dart';
+import 'package:digital_wellbeing_app/features/settings/settings_controller.dart';
+import 'package:digital_wellbeing_app/features/auth/signup-screen/signup_screen.dart';
 
 void main() {
   runApp(const BehtarApp());
@@ -38,7 +36,13 @@ class _BehtarAppState extends State<BehtarApp> {
       title: 'Behtar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: SettingsScreen(controller: _settingsController),
+      // Temporarily showing the Sign Up screen for testing.
+      home: SignUpScreen(
+        // Phone is in full international format, e.g. +923001234567.
+        onSignUp: (name, email, phone, password) {
+          debugPrint('Sign up: $name | $email | $phone');
+        },
+      ),
     );
   }
 }
