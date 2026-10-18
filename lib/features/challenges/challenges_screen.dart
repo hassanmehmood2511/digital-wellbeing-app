@@ -6,9 +6,14 @@ import 'challenge.dart';
 import 'challenges_controller.dart';
 
 class ChallengesScreen extends StatefulWidget {
-  const ChallengesScreen({required this.controller, super.key});
+  const ChallengesScreen({
+    required this.controller,
+    this.onOpenGroups,
+    super.key,
+  });
 
   final ChallengesController controller;
+  final VoidCallback? onOpenGroups;
 
   @override
   State<ChallengesScreen> createState() => _ChallengesScreenState();
@@ -35,6 +40,12 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
               onPressed: _openCreate,
               icon: const Icon(Icons.add_rounded),
             ),
+            if (widget.onOpenGroups != null)
+              IconButton(
+                tooltip: 'Groups and leaderboard',
+                onPressed: widget.onOpenGroups,
+                icon: const Icon(Icons.groups_outlined),
+              ),
             const SizedBox(width: BehtarSpacing.xs),
           ],
           children: [
