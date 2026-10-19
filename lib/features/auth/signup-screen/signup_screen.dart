@@ -6,19 +6,11 @@ import 'package:google_fonts/google_fonts.dart';
 class SignUpScreen extends StatefulWidget {
   /// Called after all validation passes. Connect your backend here.
   /// The phone number is in full international format, e.g. +923001234567.
-  final void Function(
-    String name,
-    String email,
-    String phone,
-    String password,
-  )? onSignUp;
+  final void Function(String name, String email, String phone, String password)?
+  onSignUp;
   final VoidCallback? onLogin;
 
-  const SignUpScreen({
-    super.key,
-    this.onSignUp,
-    this.onLogin,
-  });
+  const SignUpScreen({super.key, this.onSignUp, this.onLogin});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -86,6 +78,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   bool _obscureConfirm = true;
   bool _acceptedTerms = false;
   bool _termsError = false;
+  bool _isSubmitting = false;
 
   // Selected country for the phone number (default: Pakistan).
   String _dialCode = '92';
@@ -104,19 +97,20 @@ class _SignUpScreenState extends State<SignUpScreen>
 
     _blink = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1, end: 0.08)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween<double>(
+          begin: 1,
+          end: 0.08,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 5,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.08, end: 1)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(
+          begin: 0.08,
+          end: 1,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 5,
       ),
-      TweenSequenceItem(
-        tween: ConstantTween<double>(1),
-        weight: 90,
-      ),
+      TweenSequenceItem(tween: ConstantTween<double>(1), weight: 90),
     ]).animate(_blinkController);
 
     _blinkController.repeat();
@@ -247,9 +241,9 @@ class _SignUpScreenState extends State<SignUpScreen>
   // ---------------------------------------------------------------------------
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _pickCountry() {
@@ -280,6 +274,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   void _handleSignUp() {
+    if (_isSubmitting) return;
     FocusScope.of(context).unfocus();
 
     final formValid = _formKey.currentState!.validate();
@@ -297,6 +292,7 @@ class _SignUpScreenState extends State<SignUpScreen>
     final fullPhone = '+$_dialCode$phone';
 
     if (widget.onSignUp != null) {
+      setState(() => _isSubmitting = true);
       widget.onSignUp!(name, email, fullPhone, _passwordController.text);
     } else {
       _showMessage('Sign Up UI is ready. Connect your backend to continue.');
@@ -329,8 +325,7 @@ class _SignUpScreenState extends State<SignUpScreen>
         color: secondaryText.withValues(alpha: 0.75),
         fontSize: 13 * scale,
       ),
-      prefixIcon:
-          prefix ?? Icon(icon, color: secondaryGreen, size: 21 * scale),
+      prefixIcon: prefix ?? Icon(icon, color: secondaryGreen, size: 21 * scale),
       prefixIconConstraints: prefix != null
           ? const BoxConstraints(minWidth: 0, minHeight: 0)
           : null,
@@ -363,10 +358,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   TextStyle _fieldStyle(double scale) {
-    return GoogleFonts.poppins(
-      fontSize: 13.5 * scale,
-      color: primaryText,
-    );
+    return GoogleFonts.poppins(fontSize: 13.5 * scale, color: primaryText);
   }
 
   // Flag + dial code button shown inside the phone field.
@@ -467,11 +459,12 @@ class _SignUpScreenState extends State<SignUpScreen>
 
     // Scale is derived from both width and height,
     // so the layout fits correctly on every device.
-    final double scale = (screen.width / 390 < screen.height / 800
-            ? screen.width / 390
-            : screen.height / 800)
-        .clamp(0.8, 1.35)
-        .toDouble();
+    final double scale =
+        (screen.width / 390 < screen.height / 800
+                ? screen.width / 390
+                : screen.height / 800)
+            .clamp(0.8, 1.35)
+            .toDouble();
 
     return Scaffold(
       backgroundColor: background,
@@ -484,15 +477,18 @@ class _SignUpScreenState extends State<SignUpScreen>
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final double horizontalPadding =
-                    (constraints.maxWidth * 0.065).clamp(20.0, 32.0).toDouble();
+                final double horizontalPadding = (constraints.maxWidth * 0.065)
+                    .clamp(20.0, 32.0)
+                    .toDouble();
 
                 return SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 460),
@@ -503,7 +499,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                           ),
                           child: Form(
                             key: _formKey,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -709,7 +706,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                                           width: 1.5,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5),
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
                                         ),
                                         onChanged: (value) {
                                           setState(() {
@@ -724,7 +723,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                                     SizedBox(width: 10 * scale),
                                     Expanded(
                                       child: Padding(
-                                        padding: EdgeInsets.only(top: 3 * scale),
+                                        padding: EdgeInsets.only(
+                                          top: 3 * scale,
+                                        ),
                                         child: Text(
                                           'I agree to the Terms of Service and Privacy Policy, and I confirm I am using my own real email and phone number.',
                                           style: GoogleFonts.poppins(
@@ -746,18 +747,22 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 SizedBox(
                                   height: 54 * scale,
                                   child: ElevatedButton(
-                                    onPressed: _handleSignUp,
+                                    onPressed: _isSubmitting
+                                        ? null
+                                        : _handleSignUp,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: primaryGreen,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15 * scale),
+                                        borderRadius: BorderRadius.circular(
+                                          15 * scale,
+                                        ),
                                       ),
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Create Account',
@@ -791,8 +796,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: widget.onLogin ??
-                                          () => Navigator.of(context).maybePop(),
+                                      onPressed:
+                                          widget.onLogin ??
+                                          () =>
+                                              Navigator.of(context).maybePop(),
                                       style: TextButton.styleFrom(
                                         foregroundColor: primaryGreen,
                                         padding: EdgeInsets.symmetric(
@@ -812,10 +819,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                                     ),
                                   ],
                                 ),
-
-
-
-                               
                               ],
                             ),
                           ),

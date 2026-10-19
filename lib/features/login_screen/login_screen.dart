@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   bool _obscurePassword = true;
   bool _rememberMe = true;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -53,19 +54,20 @@ class _LoginScreenState extends State<LoginScreen>
 
     _blink = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1, end: 0.08)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween<double>(
+          begin: 1,
+          end: 0.08,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 5,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.08, end: 1)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(
+          begin: 0.08,
+          end: 1,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 5,
       ),
-      TweenSequenceItem(
-        tween: ConstantTween<double>(1),
-        weight: 90,
-      ),
+      TweenSequenceItem(tween: ConstantTween<double>(1), weight: 90),
     ]).animate(_blinkController);
 
     _blinkController.repeat();
@@ -117,15 +119,17 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _handleLogin() {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
     if (widget.onLogin != null) {
+      setState(() => _isSubmitting = true);
       widget.onLogin!();
     } else {
       _showMessage('Login UI is ready. Connect authentication to continue.');
@@ -158,8 +162,9 @@ class _LoginScreenState extends State<LoginScreen>
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final double horizontalPadding =
-                    (constraints.maxWidth * 0.065).clamp(20.0, 32.0).toDouble();
+                final double horizontalPadding = (constraints.maxWidth * 0.065)
+                    .clamp(20.0, 32.0)
+                    .toDouble();
 
                 // Scrolls only when content does not fit (small screens or
                 // keyboard open). Otherwise the content stays centered.
@@ -253,8 +258,9 @@ class _LoginScreenState extends State<LoginScreen>
                                       return 'Please enter your email address';
                                     }
 
-                                    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                                        .hasMatch(email)) {
+                                    if (!RegExp(
+                                      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                                    ).hasMatch(email)) {
                                       return 'Please enter a valid email address';
                                     }
 
@@ -328,7 +334,9 @@ class _LoginScreenState extends State<LoginScreen>
                                           width: 1.5,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5),
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
                                         ),
                                         onChanged: (value) {
                                           setState(() {
@@ -348,10 +356,11 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: widget.onForgotPassword ??
+                                      onPressed:
+                                          widget.onForgotPassword ??
                                           () => _showMessage(
-                                                'Forgot Password screen is not connected yet.',
-                                              ),
+                                            'Forgot Password screen is not connected yet.',
+                                          ),
                                       style: TextButton.styleFrom(
                                         foregroundColor: primaryGreen,
                                         padding: EdgeInsets.symmetric(
@@ -375,14 +384,17 @@ class _LoginScreenState extends State<LoginScreen>
                                 SizedBox(
                                   height: 54 * scale,
                                   child: ElevatedButton(
-                                    onPressed: _handleLogin,
+                                    onPressed: _isSubmitting
+                                        ? null
+                                        : _handleLogin,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: primaryGreen,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15 * scale),
+                                        borderRadius: BorderRadius.circular(
+                                          15 * scale,
+                                        ),
                                       ),
                                     ),
                                     child: Row(
@@ -440,10 +452,11 @@ class _LoginScreenState extends State<LoginScreen>
                                 SizedBox(
                                   height: 52 * scale,
                                   child: OutlinedButton(
-                                    onPressed: widget.onGoogleSignIn ??
+                                    onPressed:
+                                        widget.onGoogleSignIn ??
                                         () => _showMessage(
-                                              'Google Sign-In is not connected yet.',
-                                            ),
+                                          'Google Sign-In is not connected yet.',
+                                        ),
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: primaryText,
@@ -451,8 +464,9 @@ class _LoginScreenState extends State<LoginScreen>
                                         color: borderColor,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(14 * scale),
+                                        borderRadius: BorderRadius.circular(
+                                          14 * scale,
+                                        ),
                                       ),
                                     ),
                                     child: Row(
@@ -460,19 +474,20 @@ class _LoginScreenState extends State<LoginScreen>
                                           MainAxisAlignment.center,
                                       children: [
                                         Image.asset(
-  'assets/icons/google.png',
-  width: 24 * scale,
-  height: 24 * scale,
-  fit: BoxFit.contain,
-  errorBuilder: (context, error, stackTrace) {
-    // Fallback if the asset path is wrong.
-    return Icon(
-      Icons.g_mobiledata_rounded,
-      size: 28 * scale,
-      color: primaryGreen,
-    );
-  },
-),
+                                          'assets/icons/google.png',
+                                          width: 24 * scale,
+                                          height: 24 * scale,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                // Fallback if the asset path is wrong.
+                                                return Icon(
+                                                  Icons.g_mobiledata_rounded,
+                                                  size: 28 * scale,
+                                                  color: primaryGreen,
+                                                );
+                                              },
+                                        ),
                                         SizedBox(width: 11 * scale),
                                         Text(
                                           'Continue with Google',
@@ -501,10 +516,11 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: widget.onSignUp ??
+                                      onPressed:
+                                          widget.onSignUp ??
                                           () => _showMessage(
-                                                'Sign Up screen is not connected yet.',
-                                              ),
+                                            'Sign Up screen is not connected yet.',
+                                          ),
                                       style: TextButton.styleFrom(
                                         foregroundColor: primaryGreen,
                                         padding: EdgeInsets.symmetric(
@@ -526,8 +542,6 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
 
                                 SizedBox(height: 14 * scale),
-
-                            
                               ],
                             ),
                           ),
@@ -616,7 +630,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// Decorative background shapes 
+// Decorative background shapes
 class _BackgroundPainter extends CustomPainter {
   const _BackgroundPainter();
 
