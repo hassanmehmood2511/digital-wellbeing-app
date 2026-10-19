@@ -26,7 +26,6 @@ abstract final class BehtarColors {
   static const Color mint = Color(0xFFE8F5E9);
 
   // Backgrounds & Surfaces
-  static const Color background = Color(0xFFF5FAF5);
   static const Color white = Color(0xFFFFFFFF);
 
   // Text Colors
