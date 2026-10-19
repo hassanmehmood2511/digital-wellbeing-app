@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 class SettingsController extends ChangeNotifier {
-  String fullName = 'Ayesha Khan';
-  String email = 'ayesha.khan@example.com';
+  SettingsController({this.email = 'hassanmehmood@example.com'});
+
+  String fullName = 'Hassan Mehmood';
+  final String email;
   String phone = '+92 300 1234567';
   String selectedLanguage = 'English';
 
@@ -11,13 +13,8 @@ class SettingsController extends ChangeNotifier {
   bool dailyCheckInEnabled = true;
   bool wellbeingTipsEnabled = false;
 
-  void updateProfile({
-    required String fullName,
-    required String email,
-    required String phone,
-  }) {
+  void updateProfile({required String fullName, required String phone}) {
     this.fullName = fullName;
-    this.email = email;
     this.phone = phone;
     notifyListeners();
   }

@@ -16,9 +16,9 @@ class AccountSettingsScreen extends StatelessWidget {
       children: [
         Text(
           'Manage how you use Behtar on this device.',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: BehtarColors.secondaryText,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: BehtarColors.secondaryText),
         ),
         const SizedBox(height: BehtarSpacing.lg),
         SettingsCard(
@@ -28,8 +28,8 @@ class AccountSettingsScreen extends StatelessWidget {
               ListTile(
                 contentPadding: const EdgeInsets.all(BehtarSpacing.base),
                 leading: const CircleAvatar(
-                  backgroundColor: BehtarColors.primarySoft,
-                  foregroundColor: BehtarColors.primaryDark,
+                  backgroundColor: BehtarColors.mint,
+                  foregroundColor: BehtarColors.primary,
                   child: Icon(Icons.alternate_email_rounded),
                 ),
                 title: Text(
@@ -45,8 +45,8 @@ class AccountSettingsScreen extends StatelessWidget {
               ListTile(
                 contentPadding: const EdgeInsets.all(BehtarSpacing.base),
                 leading: const CircleAvatar(
-                  backgroundColor: BehtarColors.primarySoft,
-                  foregroundColor: BehtarColors.primaryDark,
+                  backgroundColor: BehtarColors.mint,
+                  foregroundColor: BehtarColors.primary,
                   child: Icon(Icons.privacy_tip_outlined),
                 ),
                 title: Text(
@@ -70,7 +70,7 @@ class AccountSettingsScreen extends StatelessWidget {
                 label: const Text('Sign out'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
-                  foregroundColor: BehtarColors.primaryDark,
+                  foregroundColor: BehtarColors.primary,
                   side: const BorderSide(color: BehtarColors.border),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(BehtarRadii.control),
@@ -84,7 +84,7 @@ class AccountSettingsScreen extends StatelessWidget {
                 label: const Text('Delete account'),
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
-                  foregroundColor: BehtarColors.error,
+                  foregroundColor: BehtarColors.primaryText,
                 ),
               ),
             ],
@@ -125,7 +125,10 @@ class AccountSettingsScreen extends StatelessWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
-      showSettingsMessage(context, 'Demo sign-out complete. No session changed.');
+      showSettingsMessage(
+        context,
+        'Demo sign-out complete. No session changed.',
+      );
     }
   }
 
@@ -133,7 +136,10 @@ class AccountSettingsScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.warning_amber_rounded, color: BehtarColors.error),
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: BehtarColors.primary,
+        ),
         title: const Text('Delete account?'),
         content: const Text(
           'Account deletion cannot be undone. This demo will not delete your '
@@ -146,7 +152,7 @@ class AccountSettingsScreen extends StatelessWidget {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: BehtarColors.error,
+              backgroundColor: BehtarColors.primary,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Confirm demo action'),

@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
+import 'core/routing/app_navigation_shell.dart';
 import 'features/settings/settings_controller.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/splashscreen/splash_screen.dart';
@@ -40,6 +42,7 @@ class _BehtarAppState extends State<BehtarApp> {
       home: SplashScreen(
        onFinished: () {},
       ),
+      home: AppNavigationShell(settingsController: _settingsController),
     );
   }
 }
