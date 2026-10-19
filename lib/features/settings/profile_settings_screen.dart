@@ -58,18 +58,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 ),
                 const SizedBox(height: BehtarSpacing.base),
                 _ProfileField(
-                  label: 'Email address',
+                  label: 'Sign-up email',
                   controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Enter your email address';
-                    }
-                    if (!value.contains('@') || !value.contains('.')) {
-                      return 'Enter a valid email address';
-                    }
-                    return null;
-                  },
+                  readOnly: true,
+                  helperText: 'Your sign-up email cannot be changed.',
                 ),
                 const SizedBox(height: BehtarSpacing.base),
                 _ProfileField(
@@ -82,10 +74,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ),
         ),
         const SizedBox(height: BehtarSpacing.lg),
-        SettingsSaveButton(
-          isSaving: _isSaving,
-          onPressed: _saveProfile,
-        ),
+        SettingsSaveButton(isSaving: _isSaving, onPressed: _saveProfile),
         const SizedBox(height: BehtarSpacing.sm),
         Center(
           child: Text(
@@ -105,7 +94,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     if (!mounted) return;
     widget.controller.updateProfile(
       fullName: _nameController.text.trim(),
-      email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
     );
     setState(() => _isSaving = false);
@@ -120,9 +108,9 @@ class _ProfileIntro extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       'Keep your details up to date.',
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: BehtarColors.secondaryText,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(color: BehtarColors.secondaryText),
     );
   }
 }
@@ -133,12 +121,16 @@ class _ProfileField extends StatelessWidget {
     required this.controller,
     this.keyboardType,
     this.validator,
+    this.readOnly = false,
+    this.helperText,
   });
 
   final String label;
   final TextEditingController controller;
   final TextInputType? keyboardType;
   final FormFieldValidator<String>? validator;
+  final bool readOnly;
+  final String? helperText;
 
   @override
   Widget build(BuildContext context) {
@@ -153,6 +145,8 @@ class _ProfileField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           validator: validator,
+          readOnly: readOnly,
+          decoration: InputDecoration(helperText: helperText),
           textCapitalization: keyboardType == TextInputType.emailAddress
               ? TextCapitalization.none
               : TextCapitalization.words,
