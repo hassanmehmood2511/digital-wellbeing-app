@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../data/app_data.dart';
+import '../habits/data/habit_store.dart';
 import '../settings/settings_controller.dart';
 
 /// Compile-time switch for the developer-only scenario preview menu.
@@ -44,6 +46,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   void initState() {
     super.initState();
     _attachController(widget.controller);
+    HabitStore.instance.addListener(_onHabitsChanged);
     _showLoadingPreview();
   }
 
@@ -58,6 +61,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
   @override
   void dispose() {
+    HabitStore.instance.removeListener(_onHabitsChanged);
     _detachController();
     super.dispose();
   }
@@ -73,6 +77,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   void _onSettingsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _onHabitsChanged() {
     if (mounted) setState(() {});
   }
 
@@ -99,13 +107,48 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     _applyScenario(scenario);
   }
 
-  int get _completedCount => _habits.where((habit) => habit.completed).length;
+  // Prefer the shared HabitStore singleton so completing a habit on the Habits
+  // screen updates this summary; fall back to scenario data when it is empty.
+  int get _completedCount {
+    final live = HabitStore.instance.habits;
+    if (live.isNotEmpty) {
+      return live.where((habit) => habit.isCompleted).length;
+    }
+    return _habits.where((habit) => habit.completed).length;
+  }
+
+  int get _totalHabits {
+    final live = HabitStore.instance.habits;
+    if (live.isNotEmpty) return live.length;
+    return _habits.length;
+  }
 
   double get _progressFraction =>
-      _habits.isEmpty ? 0 : _completedCount / _habits.length;
+      _totalHabits == 0 ? 0 : _completedCount / _totalHabits;
 
   bool get _dayCompleted =>
-      _habits.isNotEmpty && _completedCount == _habits.length;
+      _totalHabits > 0 && _completedCount == _totalHabits;
+
+  // Screen Time summary from the shared AppData singleton (the same source the
+  // Screen Time screen uses). AppData has no change notifier, so this reflects
+  // current values whenever the dashboard rebuilds.
+  int get _trackedUsageMinutes => AppData()
+      .apps
+      .where((app) => app.isTracked)
+      .fold(0, (sum, app) => sum + app.usageMinutes);
+
+  int get _trackedLimitMinutes => AppData()
+      .apps
+      .where((app) => app.isTracked)
+      .fold(0, (sum, app) => sum + app.dailyLimitMinutes);
+
+  String _formatMinutes(int totalMinutes) {
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
+    if (hours == 0) return '${minutes}m';
+    if (minutes == 0) return '${hours}h';
+    return '${hours}h ${minutes}m';
+  }
 
   void _openTab(int index) {
     final callback = widget.onOpenTab;
@@ -278,7 +321,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   Widget _buildProgressCard(BuildContext context, _DashboardData data) {
     final theme = Theme.of(context);
 
-    if (_habits.isEmpty) {
+    if (_totalHabits == 0) {
       return _SectionCard(
         title: 'Today’s Progress',
         child: Column(
@@ -319,7 +362,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             children: [
               _ProgressRing(
                 fraction: _progressFraction,
-                label: '$_completedCount/${_habits.length}',
+                label: '$_completedCount/$_totalHabits',
               ),
               const SizedBox(width: BehtarSpacing.base),
               Expanded(
@@ -377,14 +420,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Widget _buildScreenTimeCard(BuildContext context, _DashboardData data) {
+    final usage = _trackedUsageMinutes;
+    final hasUsage = usage > 0;
     return Expanded(
       child: _StatCard(
         icon: Icons.phone_android_rounded,
         iconBackground: BehtarColors.mint,
         iconColor: BehtarColors.primary,
         label: 'Screen Time',
-        value: data.screenTimeLabel,
-        subtitle: data.screenTimeSubtitle,
+        value: hasUsage ? _formatMinutes(usage) : data.screenTimeLabel,
+        subtitle: hasUsage
+            ? 'Limit: ${_formatMinutes(_trackedLimitMinutes)}'
+            : data.screenTimeSubtitle,
       ),
     );
   }
