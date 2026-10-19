@@ -1,5 +1,9 @@
+
 import 'package:flutter/material.dart';
 
+import 'package:digital_wellbeing_app/core/theme/app_theme.dart';
+import 'package:digital_wellbeing_app/features/settings/settings_controller.dart';
+import 'package:digital_wellbeing_app/features/forgot_password_screen/forgot_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routing/app_navigation_shell.dart';
@@ -39,6 +43,9 @@ class _BehtarAppState extends State<BehtarApp> {
       title: 'Behtar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+
+      // Temporarily showing the Forgot Password screen for testing.
+      home: const ForgotPasswordScreen(),
       home: SplashScreen(
        onFinished: () {},
       ),
