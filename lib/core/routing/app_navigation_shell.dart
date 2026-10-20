@@ -5,6 +5,7 @@ import '../../features/challenges/challenges_screen.dart';
 import '../../features/digital_wellbeing/screens/usage_overview_screen.dart';
 import '../../features/groups/groups_controller.dart';
 import '../../features/groups/groups_screen.dart';
+import '../../features/home/home_dashboard_screen.dart';
 import '../../features/rewards/progress_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
@@ -42,10 +43,9 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          const _DestinationPlaceholder(
-            title: 'Home',
-            message: 'Your day starts with one small step.',
-            icon: Icons.home_rounded,
+          HomeDashboardScreen(
+            controller: widget.settingsController,
+            onOpenTab: (index) => setState(() => _currentIndex = index),
           ),
 
           // Habit feature connected to the navigation shell.
