@@ -244,7 +244,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
     return Row(
       children: [
-        const Icon(Icons.eco_rounded, color: BehtarColors.primary, size: 30),
+        Image.asset(
+          'assets/images/Behtar-Logo.png',
+          height: 60,
+          fit: BoxFit.contain,
+        ),
         const SizedBox(width: BehtarSpacing.sm),
         Expanded(
           child: Text(
