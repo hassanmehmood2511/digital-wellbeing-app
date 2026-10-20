@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/routing/app_navigation_shell.dart';
+import 'features/rewards/rewards_store.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/signup-screen/signup_screen.dart';
 import 'features/forgot_password_screen/forgot_password_screen.dart';
@@ -10,7 +11,9 @@ import 'features/onboarding_screen/screen_01.dart';
 import 'features/settings/settings_controller.dart';
 import 'features/splashscreen/splash_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await PointsStore.instance.initialize();
   runApp(const BehtarApp());
 }
 

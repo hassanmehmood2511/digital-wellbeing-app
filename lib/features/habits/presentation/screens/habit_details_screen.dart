@@ -5,6 +5,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../data/habit_store.dart';
 import '../../models/habit_model.dart';
+import '../../../rewards/reward_completion_service.dart';
 
 class HabitDetailsScreen extends StatelessWidget {
   final HabitModel habit;
@@ -98,10 +99,17 @@ class HabitDetailsScreen extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: currentHabit.isCompleted
                         ? null
-                        : () {
-                            HabitStore.instance.completeHabit(
+                        : () async {
+                            final completed = HabitStore.instance.completeHabit(
                               currentHabit.habitId,
                             );
+                            if (completed != null) {
+                              await awardHabitCompletion(
+                                context,
+                                habitId: completed.habitId,
+                                habitName: completed.title,
+                              );
+                            }
                           },
                     icon: Icon(
                       currentHabit.isCompleted
