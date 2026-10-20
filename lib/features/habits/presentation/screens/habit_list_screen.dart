@@ -3,6 +3,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../data/habit_store.dart';
+import '../../../rewards/reward_completion_service.dart';
 import '../widgets/habit_card.dart';
 import 'add_habit_screen.dart';
 import 'habit_details_screen.dart';
@@ -106,8 +107,17 @@ class HabitListScreen extends StatelessWidget {
                           );
                         },
 
-                        onComplete: () {
-                          HabitStore.instance.completeHabit(habit.habitId);
+                        onComplete: () async {
+                          final completed = HabitStore.instance.completeHabit(
+                            habit.habitId,
+                          );
+                          if (completed != null) {
+                            await awardHabitCompletion(
+                              context,
+                              habitId: completed.habitId,
+                              habitName: completed.title,
+                            );
+                          }
                         },
                       );
                     },
