@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/routing/app_navigation_shell.dart';
 import 'features/rewards/rewards_store.dart';
@@ -6,6 +7,7 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/signup-screen/signup_screen.dart';
 import 'features/forgot_password_screen/forgot_password_screen.dart';
 import 'features/login_screen/login_screen.dart';
+import 'features/onboarding_screen/screen_01.dart';
 import 'features/settings/settings_controller.dart';
 import 'features/splashscreen/splash_screen.dart';
 
@@ -23,12 +25,20 @@ class BehtarApp extends StatefulWidget {
 }
 
 class _BehtarAppState extends State<BehtarApp> {
+  // Saved on the device once the user has finished (or skipped) onboarding.
+  static const String _onboardingKey = 'onboarding_completed';
+
+  // Set to true while testing, so onboarding shows after every login.
+  // Set back to false before release.
+  static const bool _alwaysShowOnboarding = false;
+
   late final SettingsController _settingsController;
 
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   bool _hasStartedLogin = false;
   bool _isOpeningAuthRoute = false;
+  bool _isCheckingOnboarding = false;
   bool _hasEnteredDashboard = false;
 
   @override
@@ -51,7 +61,7 @@ class _BehtarAppState extends State<BehtarApp> {
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(
-          onLogin: _openDashboard,
+          onLogin: _afterAuthentication,
           onForgotPassword: _openForgotPassword,
           onSignUp: _openSignUp,
         ),
@@ -74,7 +84,7 @@ class _BehtarAppState extends State<BehtarApp> {
     String phone,
     String password,
   ) {
-    _openDashboard();
+    _afterAuthentication();
   }
 
   void _openForgotPassword() {
@@ -99,6 +109,62 @@ class _BehtarAppState extends State<BehtarApp> {
     }
   }
 
+  // Called after a successful login or sign up.
+  // First-time users see onboarding, everyone else goes to the dashboard.
+  Future<void> _afterAuthentication() async {
+    if (_hasEnteredDashboard || _isCheckingOnboarding) return;
+    _isCheckingOnboarding = true;
+
+    bool alreadySeen = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      alreadySeen = prefs.getBool(_onboardingKey) ?? false;
+    } catch (_) {
+      // If storage fails, skip onboarding instead of blocking the user.
+      alreadySeen = true;
+    }
+
+    _isCheckingOnboarding = false;
+
+    if (alreadySeen && !_alwaysShowOnboarding) {
+      _openDashboard();
+    } else {
+      _openOnboarding();
+    }
+  }
+
+  void _openOnboarding() {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    // Clears login / sign up from the back stack.
+    navigator.pushAndRemoveUntil<void>(
+      PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            OnboardingScreenOne(onFinished: _finishOnboarding),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+      (_) => false,
+    );
+  }
+
+  // Called by Skip or Get Started on the onboarding screens.
+  Future<void> _finishOnboarding() async {
+    if (_hasEnteredDashboard) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_onboardingKey, true);
+    } catch (_) {
+      // Not critical: onboarding may simply show again next time.
+    }
+
+    _openDashboard();
+  }
+
   void _openDashboard() {
     if (_hasEnteredDashboard) return;
     final navigator = _navigatorKey.currentState;
@@ -107,9 +173,13 @@ class _BehtarAppState extends State<BehtarApp> {
     _hasEnteredDashboard = true;
     // Temporary mock auth: replace this callback with backend authentication.
     navigator.pushAndRemoveUntil<void>(
-      MaterialPageRoute<void>(
-        builder: (_) =>
+      PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) =>
             AppNavigationShell(settingsController: _settingsController),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
       ),
       (_) => false,
     );
