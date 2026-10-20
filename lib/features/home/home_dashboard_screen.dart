@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../data/app_data.dart';
+import '../groups/groups_controller.dart';
+import '../groups/groups_screen.dart';
 import '../habits/data/habit_store.dart';
 import '../settings/settings_controller.dart';
 
@@ -42,6 +44,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   List<_HabitEntry> _habits = const [];
   SettingsController? _listenedController;
 
+  // Owns the Groups data for the "View Group" action so the existing
+  // GroupsScreen can be opened directly from Home. Created once and kept
+  // stable for this screen's lifetime.
+  final GroupsController _groupsController = GroupsController();
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +70,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   void dispose() {
     HabitStore.instance.removeListener(_onHabitsChanged);
     _detachController();
+    _groupsController.dispose();
     super.dispose();
   }
 
@@ -129,6 +137,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   bool get _dayCompleted =>
       _totalHabits > 0 && _completedCount == _totalHabits;
 
+  // Daily Wellness is a habit-progress indicator (not an emotional mood),
+  // derived from the same completion counts as Today's Progress.
+  String get _wellnessStatus {
+    if (_totalHabits == 0) return 'Take It Easy';
+    if (_completedCount >= _totalHabits) return 'Great Progress';
+    if (_completedCount > 0) return 'Making Progress';
+    return 'Take It Easy';
+  }
+
   // Screen Time summary from the shared AppData singleton (the same source the
   // Screen Time screen uses). AppData has no change notifier, so this reflects
   // current values whenever the dashboard rebuilds.
@@ -159,6 +176,22 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('This section is not available here.')),
+    );
+  }
+
+  // Opens the existing GroupsScreen (the "Groups" list with Create group,
+  // Join with code, and Your groups) directly, reusing the existing widget
+  // and controller classes without modifying them.
+  void _openGroups() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => GroupsScreen(
+          controller: _groupsController,
+          currentUserName: widget.controller?.fullName.trim().isNotEmpty == true
+              ? widget.controller!.fullName.trim()
+              : 'Hassan',
+        ),
+      ),
     );
   }
 
@@ -395,8 +428,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               ),
               const SizedBox(width: BehtarSpacing.base),
               _MiniStat(
-                label: 'Mood',
-                value: data.moodLabel,
+                label: 'Daily Wellness',
+                value: _wellnessStatus,
                 icon: Icons.mood_rounded,
               ),
             ],
@@ -595,9 +628,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             _QuickActionTile(
               icon: Icons.group_rounded,
               label: 'View Group',
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Groups are not available yet.')),
-              ),
+              // Opens the existing Groups list screen directly.
+              onTap: _openGroups,
             ),
           ],
         ),
