@@ -1,9 +1,7 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-
-import '../../core/theme/app_theme.dart';
-import '../settings/settings_controller.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../settings/settings_controller.dart';
 
 /// Compile-time switch for the developer-only scenario preview menu.
 /// Enable with: --dart-define=dashboard_state_preview=true
