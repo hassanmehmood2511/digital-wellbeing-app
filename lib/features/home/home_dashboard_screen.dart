@@ -213,15 +213,28 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 BehtarSpacing.base,
-                BehtarSpacing.base,
+                BehtarSpacing.xs,
                 BehtarSpacing.base,
                 BehtarSpacing.xl,
               ),
               children: [
-                _buildHeader(context),
-                const SizedBox(height: BehtarSpacing.lg),
-                _buildGreeting(context),
-                const SizedBox(height: BehtarSpacing.lg),
+                // Slightly narrower, centered header/greeting band; the cards
+                // below keep the list's original full-width padding.
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: BehtarSpacing.sm,
+                  ),
+                  child: Column(
+                    children: [
+                      _buildHeader(context),
+                      const SizedBox(height: BehtarSpacing.sm),
+                      _buildGreeting(context),
+                      // Equal space above and below centers the greeting
+                      // group vertically within the header/greeting section.
+                      const SizedBox(height: BehtarSpacing.sm),
+                    ],
+                  ),
+                ),
                 if (_scenario == DashboardScenario.loading)
                   _buildLoadingState()
                 else if (_scenario == DashboardScenario.error)
@@ -243,13 +256,23 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final initials = _initials(fullName);
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Image.asset(
-          'assets/images/Behtar-Logo.png',
-          height: 60,
-          fit: BoxFit.contain,
+        // The logo PNG carries wide transparent padding; clip to its central
+        // mark so the icon and wordmark read as one cohesive brand lockup.
+        ClipRect(
+          child: Align(
+            alignment: Alignment.center,
+            widthFactor: 0.30,
+            heightFactor: 0.45,
+            child: Image.asset(
+              'assets/images/Behtar-Logo.png',
+              height: 96,
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
-        const SizedBox(width: BehtarSpacing.sm),
+        const SizedBox(width: BehtarSpacing.xs),
         Expanded(
           child: Text(
             'Behtar',
@@ -318,15 +341,29 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   Widget _buildGreeting(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('${_greetingForTime()},', style: theme.textTheme.titleMedium),
-        const SizedBox(height: BehtarSpacing.xs),
-        Text('${_firstName()}! 👋', style: theme.textTheme.headlineLarge),
-        const SizedBox(height: BehtarSpacing.xs),
-        Text('Small steps. Big changes.', style: theme.textTheme.bodyMedium),
-      ],
+    return Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${_greetingForTime()},',
+            textAlign: TextAlign.start,
+            style: theme.textTheme.titleMedium,
+          ),
+          const SizedBox(height: BehtarSpacing.xs),
+          Text(
+            '${_firstName()}! 👋',
+            textAlign: TextAlign.start,
+            style: theme.textTheme.headlineLarge,
+          ),
+          const SizedBox(height: BehtarSpacing.xs),
+          Text(
+            'Small steps. Big changes.',
+            textAlign: TextAlign.start,
+            style: theme.textTheme.bodyMedium,
+          ),
+        ],
+      ),
     );
   }
 
