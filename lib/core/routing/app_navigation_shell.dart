@@ -5,6 +5,7 @@ import '../../features/challenges/challenges_screen.dart';
 import '../../features/digital_wellbeing/screens/usage_overview_screen.dart';
 import '../../features/groups/groups_controller.dart';
 import '../../features/groups/groups_screen.dart';
+import '../../features/rewards/progress_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
 import '../../features/habits/presentation/screens/habit_list_screen.dart';
@@ -56,11 +57,7 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
             onOpenGroups: _openGroups,
           ),
 
-          const _DestinationPlaceholder(
-            title: 'Progress',
-            message: 'Your progress will be shown here.',
-            icon: Icons.insights_rounded,
-          ),
+          const ProgressScreen(),
           const UsageOverviewScreen(),
           ProfileScreen(controller: widget.settingsController),
         ],
