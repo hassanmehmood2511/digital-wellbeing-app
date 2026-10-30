@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
-import 'package:digital_wellbeing_app/data/app_data.dart';
-import 'package:digital_wellbeing_app/models/app_usage.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/data/app_data.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usage.dart';
 import 'app_usage_detail_screen.dart';
 import 'tracked_apps_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -22,8 +22,13 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
   Widget build(BuildContext context) {
     final apps = AppData().apps.where((app) => app.isTracked).toList();
     final totalUsage = apps.fold<int>(0, (sum, app) => sum + app.usageMinutes);
-    final totalLimit = apps.fold<int>(0, (sum, app) => sum + app.dailyLimitMinutes);
-    final overallPercentage = totalLimit > 0 ? (totalUsage / totalLimit).clamp(0.0, 1.5) : 0.0;
+    final totalLimit = apps.fold<int>(
+      0,
+      (sum, app) => sum + app.dailyLimitMinutes,
+    );
+    final overallPercentage = totalLimit > 0
+        ? (totalUsage / totalLimit).clamp(0.0, 1.5)
+        : 0.0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -57,12 +62,18 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const TrackedAppsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const TrackedAppsScreen(),
+                      ),
                     ).then((_) => setState(() {}));
                   },
                   child: Text(
                     'Manage',
-                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 16),
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ],
@@ -109,7 +120,8 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded( // ✅ FIX: Prevents yellow/black overflow box on mobile
+              Expanded(
+                // ✅ FIX: Prevents yellow/black overflow box on mobile
                 child: Text(
                   'Today\'s Total Usage',
                   style: AppTypography.h3.copyWith(fontSize: 18),
@@ -117,13 +129,16 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Flexible( // ✅ FIX: Prevents yellow/black overflow box on mobile
+              Flexible(
+                // ✅ FIX: Prevents yellow/black overflow box on mobile
                 child: Text(
                   '${_formatMinutes(totalUsage)} / ${_formatMinutes(totalLimit)}',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: percentage >= 1.0 ? AppColors.primary : AppColors.secondary,
+                    color: percentage >= 1.0
+                        ? AppColors.primary
+                        : AppColors.secondary,
                   ),
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
@@ -149,7 +164,9 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                 ? '⚠️ You\'ve exceeded your total daily limit!'
                 : '${(percentage * 100).toStringAsFixed(0)}% of daily limit used',
             style: AppTypography.small.copyWith(
-              color: percentage >= 1.0 ? AppColors.primary : AppColors.textSecondary,
+              color: percentage >= 1.0
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
             ),
           ),
         ],
@@ -174,7 +191,11 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               color: AppColors.mint,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.notifications_active_outlined, color: AppColors.primary, size: 24),
+            child: const Icon(
+              Icons.notifications_active_outlined,
+              color: AppColors.primary,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -191,14 +212,17 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                 const SizedBox(height: 4),
                 const Text(
                   'Get notified at 80% of your limit',
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
           Switch(
             value: _gentleRemindersEnabled,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             activeTrackColor: AppColors.sage,
             inactiveThumbColor: AppColors.sage,
             inactiveTrackColor: AppColors.border,
@@ -215,13 +239,15 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
 
   Widget _buildSuccessCard() {
     final apps = AppData().apps;
-    final overLimitApps = apps.where((app) => app.usageMinutes > app.dailyLimitMinutes).toList();
+    final overLimitApps = apps
+        .where((app) => app.usageMinutes > app.dailyLimitMinutes)
+        .toList();
     final isAnyOverLimit = overLimitApps.isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isAnyOverLimit ? AppColors.mint : AppColors.mint,
+        color: AppColors.mint,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border, width: 1),
       ),
@@ -272,7 +298,9 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AppUsageDetailScreen(appData: appData)),
+          MaterialPageRoute(
+            builder: (context) => AppUsageDetailScreen(appData: appData),
+          ),
         );
       },
       child: Container(
@@ -299,7 +327,13 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(appName, style: AppTypography.body.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
+                  Text(
+                    appName,
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
@@ -307,7 +341,9 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                       value: percentage.clamp(0.0, 1.0),
                       backgroundColor: AppColors.border,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        percentage >= 1.0 ? AppColors.primary : AppColors.secondary,
+                        percentage >= 1.0
+                            ? AppColors.primary
+                            : AppColors.secondary,
                       ),
                       minHeight: 6,
                     ),
@@ -364,7 +400,9 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
   Widget _buildDailyUsageChart() {
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
     final weeklyUsageMinutes = AppData().getWeeklyUsage();
-    final maxMinutes = weeklyUsageMinutes.reduce((a, b) => a > b ? a : b).toDouble();
+    final maxMinutes = weeklyUsageMinutes
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
     final chartMaxHeight = 100.0;
 
     return Container(
@@ -384,7 +422,9 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               String day = entry.value;
               int minutes = weeklyUsageMinutes[index];
               double hours = minutes / 60.0;
-              double barHeight = maxMinutes > 0 ? (minutes / maxMinutes) * chartMaxHeight : 0;
+              double barHeight = maxMinutes > 0
+                  ? (minutes / maxMinutes) * chartMaxHeight
+                  : 0;
 
               Color barColor;
               if (minutes == 0) {
@@ -425,8 +465,12 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                           day,
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: index == days.length - 1 ? FontWeight.w700 : FontWeight.w600,
-                            color: index == days.length - 1 ? AppColors.primary : AppColors.textPrimary,
+                            fontWeight: index == days.length - 1
+                                ? FontWeight.w700
+                                : FontWeight.w600,
+                            color: index == days.length - 1
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -464,23 +508,47 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-            child: const Icon(Icons.self_improvement, color: AppColors.white, size: 20),
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.self_improvement,
+              color: AppColors.white,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Time for a break?', style: AppTypography.body.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                Text(
+                  'Time for a break?',
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Try a 10-minute break from social media. Your future self will thank you!', style: AppTypography.body),
+                Text(
+                  'Try a 10-minute break from social media. Your future self will thank you!',
+                  style: AppTypography.body,
+                ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
-            onPressed: () { setState(() { _showBreakReminder = false; }); },
+            icon: const Icon(
+              Icons.close,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+            onPressed: () {
+              setState(() {
+                _showBreakReminder = false;
+              });
+            },
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),

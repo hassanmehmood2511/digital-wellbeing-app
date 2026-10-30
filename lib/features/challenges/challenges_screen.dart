@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/date_formatters.dart';
 import '../../features/settings/settings_widgets.dart';
 import '../rewards/reward_completion_service.dart';
 import 'challenge.dart';
 import 'challenges_controller.dart';
+import 'utils/challenge_date_utils.dart';
+import 'widgets/challenge_widgets.dart';
 
 class ChallengesScreen extends StatefulWidget {
   const ChallengesScreen({
@@ -62,14 +65,14 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
             ),
             const SizedBox(height: BehtarSpacing.xl),
             if (controller.isLoading)
-              const _ChallengeStateCard(
+              const ChallengeStateCard(
                 icon: Icons.hourglass_top_rounded,
                 title: 'Loading challenges',
                 message: 'A moment while we get your week ready.',
                 showProgress: true,
               )
             else if (controller.loadError != null)
-              _ChallengeStateCard(
+              ChallengeStateCard(
                 icon: Icons.refresh_rounded,
                 title: 'Challenges aren’t available',
                 message: controller.loadError!,
@@ -80,7 +83,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                 ),
               )
             else if (controller.challenges.isEmpty)
-              _ChallengeStateCard(
+              ChallengeStateCard(
                 icon: Icons.emoji_events_outlined,
                 title: 'Your next small win starts here',
                 message:
@@ -94,7 +97,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
             else ...[
               const SettingsSectionTitle('7-day challenges'),
               for (final challenge in controller.challenges) ...[
-                _ChallengeCard(
+                ChallengeCard(
                   challenge: challenge,
                   onTap: () => _openDetails(challenge),
                   onAction: () => _openDetails(challenge),
@@ -170,8 +173,8 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
   @override
   void initState() {
     super.initState();
-    _startsOn = _dateOnly(DateTime.now());
-    _startDateController = TextEditingController(text: _formatDate(_startsOn));
+    _startsOn = challengeDateOnly(DateTime.now());
+    _startDateController = TextEditingController(text: formatDate(_startsOn));
   }
 
   @override
@@ -321,7 +324,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
                     suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                   validator: (_) {
-                    if (_startsOn.isBefore(_dateOnly(DateTime.now()))) {
+                    if (_startsOn.isBefore(challengeDateOnly(DateTime.now()))) {
                       return 'Choose today or a future date.';
                     }
                     return null;
@@ -330,7 +333,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
                 ),
                 const SizedBox(height: BehtarSpacing.xs),
                 Text(
-                  'Ends ${_formatDate(_startsOn.add(const Duration(days: 6)))} '
+                  'Ends ${formatDate(_startsOn.add(const Duration(days: 6)))} '
                   '· 7 days',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
@@ -373,12 +376,12 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
         ),
         const SizedBox(height: BehtarSpacing.lg),
         if (_saveError != null) ...[
-          _InlineError(message: _saveError!),
+          InlineError(message: _saveError!),
           const SizedBox(height: BehtarSpacing.md),
         ],
         if (preview != null) ...[
           const SettingsSectionTitle('Your challenge preview'),
-          _ChallengeCard(challenge: preview),
+          ChallengeCard(challenge: preview),
           const SizedBox(height: BehtarSpacing.lg),
           FilledButton(
             onPressed: _isSaving ? null : _saveChallenge,
@@ -450,7 +453,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
       : _selectedGoal!;
 
   Future<void> _selectStartDate() async {
-    final today = _dateOnly(DateTime.now());
+    final today = challengeDateOnly(DateTime.now());
     final picked = await showDatePicker(
       context: context,
       initialDate: _startsOn.isBefore(today) ? today : _startsOn,
@@ -460,8 +463,8 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
     );
     if (picked == null || !mounted) return;
     setState(() {
-      _startsOn = _dateOnly(picked);
-      _startDateController.text = _formatDate(_startsOn);
+      _startsOn = challengeDateOnly(picked);
+      _startDateController.text = formatDate(_startsOn);
       _showPreview = false;
       _saveError = null;
     });
@@ -489,7 +492,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
           return SettingsPage(
             title: 'Challenge details',
             children: const [
-              _ChallengeStateCard(
+              ChallengeStateCard(
                 icon: Icons.search_off_rounded,
                 title: 'Challenge not found',
                 message: 'Return to the list to choose another challenge.',
@@ -501,10 +504,10 @@ class ChallengeDetailsScreen extends StatelessWidget {
         return SettingsPage(
           title: 'Challenge details',
           children: [
-            _ChallengeOverview(challenge: challenge),
+            ChallengeOverview(challenge: challenge),
             const SizedBox(height: BehtarSpacing.lg),
             if (challenge.isComplete) ...[
-              const _CompletionBanner(),
+              const CompletionBanner(),
               const SizedBox(height: BehtarSpacing.lg),
             ],
             SettingsCard(
@@ -524,11 +527,11 @@ class ChallengeDetailsScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
-                      _ParticipationBadge(challenge: challenge),
+                      ParticipationBadge(challenge: challenge),
                     ],
                   ),
                   const SizedBox(height: BehtarSpacing.lg),
-                  _OverallProgress(challenge: challenge),
+                  OverallProgress(challenge: challenge),
                   const SizedBox(height: BehtarSpacing.sm),
                   Text(
                     '${challenge.completedDays} of 7 days complete',
@@ -544,7 +547,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   for (var day = 0; day < 7; day++) ...[
-                    _DayProgressRow(
+                    DayProgressRow(
                       dayNumber: day + 1,
                       date: challenge.startsOn.add(Duration(days: day)),
                       progress: challenge.dailyProgress[day],
@@ -553,7 +556,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
                           challenge.dailyProgress[day] < 1 &&
                           !challenge.startsOn
                               .add(Duration(days: day))
-                              .isAfter(_dateOnly(DateTime.now())),
+                              .isAfter(challengeDateOnly(DateTime.now())),
                       onPressed: () => _logProgress(context, challenge, day),
                     ),
                     if (day < 6)
@@ -699,7 +702,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
         current.dailyProgress[day] >= 1 ||
         current.startsOn
             .add(Duration(days: day))
-            .isAfter(_dateOnly(DateTime.now()))) {
+            .isAfter(challengeDateOnly(DateTime.now()))) {
       return;
     }
     controller.addDailyProgress(current.id, day);
@@ -711,511 +714,3 @@ class ChallengeDetailsScreen extends StatelessWidget {
     }
   }
 }
-
-class _ChallengeCard extends StatelessWidget {
-  const _ChallengeCard({required this.challenge, this.onTap, this.onAction});
-
-  final Challenge challenge;
-  final VoidCallback? onTap;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final actionLabel = challenge.isComplete
-        ? 'Completed'
-        : challenge.isJoined
-        ? 'Continue'
-        : challenge.isCreator && challenge.isPrivate
-        ? 'Start private challenge'
-        : 'Join';
-    return SettingsCard(
-      padding: EdgeInsets.zero,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(BehtarSpacing.base),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: BehtarColors.mint,
-                    foregroundColor: BehtarColors.primary,
-                    child: Icon(Icons.emoji_events_outlined),
-                  ),
-                  const SizedBox(width: BehtarSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          challenge.title,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: BehtarSpacing.xs),
-                        Text(
-                          challenge.description,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: BehtarSpacing.base),
-              Wrap(
-                spacing: BehtarSpacing.sm,
-                runSpacing: BehtarSpacing.xs,
-                children: [
-                  _ChallengeStatusTag(challenge: challenge),
-                  _ChallengeVisibilityTag(challenge: challenge),
-                ],
-              ),
-              const SizedBox(height: BehtarSpacing.base),
-              _ChallengeMeta(icon: Icons.flag_outlined, label: challenge.goal),
-              const SizedBox(height: BehtarSpacing.sm),
-              _ChallengeMeta(
-                icon: Icons.calendar_month_outlined,
-                label:
-                    '${_formatDate(challenge.startsOn)} – '
-                    '${_formatDate(challenge.endsOn)} · 7 days',
-              ),
-              const SizedBox(height: BehtarSpacing.md),
-              Row(
-                children: [
-                  Expanded(child: _ParticipationBadge(challenge: challenge)),
-                  Text(
-                    '${challenge.participantCount} people',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-              if (challenge.isJoined) ...[
-                const SizedBox(height: BehtarSpacing.md),
-                _OverallProgress(challenge: challenge),
-                const SizedBox(height: BehtarSpacing.xs),
-                Text(
-                  '${(challenge.progress * 100).round()}% complete',
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-              ],
-              if (onAction != null) ...[
-                const SizedBox(height: BehtarSpacing.md),
-                FilledButton(onPressed: onAction, child: Text(actionLabel)),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ChallengeOverview extends StatelessWidget {
-  const _ChallengeOverview({required this.challenge});
-
-  final Challenge challenge;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      padding: const EdgeInsets.all(BehtarSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            challenge.title,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: BehtarSpacing.sm),
-          Text(challenge.description),
-          const SizedBox(height: BehtarSpacing.lg),
-          _ChallengeMeta(icon: Icons.flag_outlined, label: challenge.goal),
-          const SizedBox(height: BehtarSpacing.sm),
-          _ChallengeMeta(
-            icon: Icons.calendar_month_outlined,
-            label:
-                '${_formatDate(challenge.startsOn)} – '
-                '${_formatDate(challenge.endsOn)} · 7 days',
-          ),
-          const SizedBox(height: BehtarSpacing.md),
-          Wrap(
-            spacing: BehtarSpacing.sm,
-            runSpacing: BehtarSpacing.xs,
-            children: [
-              _ChallengeStatusTag(challenge: challenge),
-              _ChallengeVisibilityTag(challenge: challenge),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChallengeStatusTag extends StatelessWidget {
-  const _ChallengeStatusTag({required this.challenge});
-
-  final Challenge challenge;
-
-  @override
-  Widget build(BuildContext context) {
-    final status = challenge.statusAt(DateTime.now());
-    final label = switch (status) {
-      ChallengeScheduleStatus.upcoming => 'Upcoming',
-      ChallengeScheduleStatus.active => 'Active',
-      ChallengeScheduleStatus.completed => 'Completed',
-      ChallengeScheduleStatus.ended => 'Ended',
-    };
-    final icon = switch (status) {
-      ChallengeScheduleStatus.upcoming => Icons.schedule_rounded,
-      ChallengeScheduleStatus.active => Icons.play_circle_outline_rounded,
-      ChallengeScheduleStatus.completed => Icons.check_circle_outline_rounded,
-      ChallengeScheduleStatus.ended => Icons.event_busy_outlined,
-    };
-    return _ChallengeTag(icon: icon, label: label);
-  }
-}
-
-class _ChallengeVisibilityTag extends StatelessWidget {
-  const _ChallengeVisibilityTag({required this.challenge});
-
-  final Challenge challenge;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ChallengeTag(
-      icon: challenge.isPrivate
-          ? Icons.lock_outline_rounded
-          : Icons.public_rounded,
-      label: challenge.isPrivate ? 'Private' : 'Public',
-    );
-  }
-}
-
-class _ChallengeTag extends StatelessWidget {
-  const _ChallengeTag({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: BehtarColors.mint,
-        border: Border.all(color: BehtarColors.border),
-        borderRadius: BorderRadius.circular(BehtarRadii.pill),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: BehtarSpacing.sm,
-          vertical: BehtarSpacing.xs,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: BehtarColors.primary),
-            const SizedBox(width: BehtarSpacing.xs),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: BehtarColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ChallengeMeta extends StatelessWidget {
-  const _ChallengeMeta({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: BehtarColors.primary),
-        const SizedBox(width: BehtarSpacing.sm),
-        Expanded(
-          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
-        ),
-      ],
-    );
-  }
-}
-
-class _ParticipationBadge extends StatelessWidget {
-  const _ParticipationBadge({required this.challenge});
-
-  final Challenge challenge;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = challenge.isComplete
-        ? 'Completed'
-        : challenge.isJoined
-        ? 'You’re taking part'
-        : challenge.isCreator
-        ? 'Created by you'
-        : 'Open to join';
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          challenge.isComplete
-              ? Icons.check_circle_outline_rounded
-              : challenge.isJoined
-              ? Icons.play_circle_outline_rounded
-              : Icons.groups_outlined,
-          size: 18,
-          color: BehtarColors.primary,
-        ),
-        const SizedBox(width: BehtarSpacing.xs),
-        Flexible(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: BehtarColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _OverallProgress extends StatelessWidget {
-  const _OverallProgress({required this.challenge});
-
-  final Challenge challenge;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(BehtarRadii.pill),
-      child: LinearProgressIndicator(
-        value: challenge.progress,
-        minHeight: 8,
-        backgroundColor: BehtarColors.border,
-        valueColor: const AlwaysStoppedAnimation<Color>(BehtarColors.secondary),
-      ),
-    );
-  }
-}
-
-class _DayProgressRow extends StatelessWidget {
-  const _DayProgressRow({
-    required this.dayNumber,
-    required this.date,
-    required this.progress,
-    required this.isEnabled,
-    required this.onPressed,
-  });
-
-  final int dayNumber;
-  final DateTime date;
-  final double progress;
-  final bool isEnabled;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final dayComplete = progress >= 1;
-    final progressText = dayComplete
-        ? 'Complete'
-        : progress > 0
-        ? 'Halfway'
-        : 'Not started';
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: BehtarSpacing.base,
-        vertical: BehtarSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: dayComplete
-                ? BehtarColors.mint
-                : BehtarColors.background,
-            foregroundColor: BehtarColors.primary,
-            child: dayComplete
-                ? const Icon(Icons.check_rounded, size: 20)
-                : Text('$dayNumber'),
-          ),
-          const SizedBox(width: BehtarSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Day $dayNumber',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(
-                  '${_formatDate(date)} · $progressText',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-          if (isEnabled)
-            TextButton(
-              onPressed: onPressed,
-              child: Text(progress > 0 ? 'Finish day' : 'Log progress'),
-            )
-          else if (progress == 0)
-            const Icon(Icons.lock_outline_rounded, color: BehtarColors.sage)
-          else
-            Text(
-              'Done',
-              style: Theme.of(
-                context,
-              ).textTheme.labelMedium?.copyWith(color: BehtarColors.primary),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CompletionBanner extends StatelessWidget {
-  const _CompletionBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      child: Row(
-        children: [
-          const CircleAvatar(
-            backgroundColor: BehtarColors.mint,
-            foregroundColor: BehtarColors.primary,
-            child: Icon(Icons.celebration_rounded),
-          ),
-          const SizedBox(width: BehtarSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'You did it!',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: BehtarSpacing.xs),
-                Text(
-                  'Seven days of small steps add up to something meaningful.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChallengeStateCard extends StatelessWidget {
-  const _ChallengeStateCard({
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.action,
-    this.showProgress = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final Widget? action;
-  final bool showProgress;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: BehtarColors.mint,
-            foregroundColor: BehtarColors.primary,
-            child: showProgress
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: BehtarColors.primary,
-                    ),
-                  )
-                : Icon(icon, size: 26),
-          ),
-          const SizedBox(height: BehtarSpacing.base),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: BehtarSpacing.xs),
-          Text(message, textAlign: TextAlign.center),
-          if (action != null) ...[
-            const SizedBox(height: BehtarSpacing.md),
-            action!,
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _InlineError extends StatelessWidget {
-  const _InlineError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline_rounded, color: BehtarColors.primary),
-          const SizedBox(width: BehtarSpacing.sm),
-          Expanded(
-            child: Text(message, style: Theme.of(context).textTheme.bodyMedium),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-String _formatDate(DateTime date) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${months[date.month - 1]} ${date.day}, ${date.year}';
-}
-
-DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);

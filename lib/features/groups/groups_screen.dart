@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/date_formatters.dart';
 import '../../features/settings/settings_widgets.dart';
 import 'group.dart';
 import 'groups_controller.dart';
 import 'leaderboard.dart';
+import 'widgets/group_widgets.dart';
 
 class GroupsScreen extends StatefulWidget {
   const GroupsScreen({
@@ -73,14 +75,14 @@ class _GroupsScreenState extends State<GroupsScreen> {
             ),
             const SizedBox(height: BehtarSpacing.xl),
             if (controller.isLoading)
-              const _GroupStateCard(
+              const GroupStateCard(
                 icon: Icons.hourglass_top_rounded,
                 title: 'Loading your groups',
                 message: 'A moment while we get your community ready.',
                 isLoading: true,
               )
             else if (controller.loadError != null)
-              _GroupStateCard(
+              GroupStateCard(
                 icon: Icons.refresh_rounded,
                 title: 'Groups aren’t available',
                 message: controller.loadError!,
@@ -91,7 +93,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
               )
             else if (controller.joinedGroups.isEmpty)
-              _GroupStateCard(
+              GroupStateCard(
                 icon: Icons.groups_outlined,
                 title: 'Find your people',
                 message:
@@ -116,7 +118,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 'Your groups (${controller.joinedGroups.length})',
               ),
               for (final group in controller.joinedGroups) ...[
-                _GroupCard(group: group, onTap: () => _openGroup(group)),
+                GroupCard(group: group, onTap: () => _openGroup(group)),
                 const SizedBox(height: BehtarSpacing.md),
               ],
             ],
@@ -248,7 +250,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: BehtarSpacing.md),
-                  _InviteError(result: _error!),
+                  InviteError(result: _error!),
                 ],
               ],
             ),
@@ -421,12 +423,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         ),
         if (_saveError != null) ...[
           const SizedBox(height: BehtarSpacing.md),
-          _GroupInlineMessage(message: _saveError!),
+          GroupInlineMessage(message: _saveError!),
         ],
         const SizedBox(height: BehtarSpacing.lg),
         if (_showPreview) ...[
           const SettingsSectionTitle('Group preview'),
-          _GroupCard(
+          GroupCard(
             group: BehtarGroup(
               id: 'preview',
               name: _nameController.text.trim(),
@@ -517,7 +519,7 @@ class GroupDetailsScreen extends StatelessWidget {
           return const SettingsPage(
             title: 'Group details',
             children: [
-              _GroupStateCard(
+              GroupStateCard(
                 icon: Icons.lock_outline_rounded,
                 title: 'Access unavailable',
                 message: 'This group is no longer available to your account.',
@@ -544,7 +546,7 @@ class GroupDetailsScreen extends StatelessWidget {
                     spacing: BehtarSpacing.sm,
                     runSpacing: BehtarSpacing.sm,
                     children: [
-                      _GroupStatusTag(
+                      GroupStatusTag(
                         icon: group.isPrivate
                             ? Icons.lock_outline_rounded
                             : Icons.public_rounded,
@@ -552,7 +554,7 @@ class GroupDetailsScreen extends StatelessWidget {
                             ? 'Private group'
                             : 'Public group',
                       ),
-                      _GroupStatusTag(
+                      GroupStatusTag(
                         icon: group.isCreator
                             ? Icons.admin_panel_settings_outlined
                             : Icons.verified_user_outlined,
@@ -614,7 +616,7 @@ class GroupDetailsScreen extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    'Invite code expires ${_formatDate(group.inviteExpiresOn)}.',
+                    'Invite code expires ${formatDate(group.inviteExpiresOn)}.',
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ],
@@ -662,232 +664,4 @@ class GroupDetailsScreen extends StatelessWidget {
       },
     );
   }
-}
-
-class _GroupCard extends StatelessWidget {
-  const _GroupCard({required this.group, this.onTap});
-
-  final BehtarGroup group;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      padding: EdgeInsets.zero,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(BehtarSpacing.base),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: BehtarColors.mint,
-                    foregroundColor: BehtarColors.primary,
-                    child: Icon(Icons.groups_rounded),
-                  ),
-                  const SizedBox(width: BehtarSpacing.md),
-                  Expanded(
-                    child: Text(
-                      group.name,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: BehtarColors.secondaryText,
-                  ),
-                ],
-              ),
-              const SizedBox(height: BehtarSpacing.md),
-              Text(group.description),
-              const SizedBox(height: BehtarSpacing.md),
-              Wrap(
-                spacing: BehtarSpacing.sm,
-                runSpacing: BehtarSpacing.xs,
-                children: [
-                  _GroupStatusTag(
-                    icon: group.isPrivate
-                        ? Icons.lock_outline_rounded
-                        : Icons.public_rounded,
-                    label: group.isPrivate ? 'Private' : 'Public',
-                  ),
-                  _GroupStatusTag(
-                    icon: Icons.people_outline_rounded,
-                    label: '${group.members.length} members',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GroupStatusTag extends StatelessWidget {
-  const _GroupStatusTag({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: BehtarColors.mint,
-        border: Border.all(color: BehtarColors.border),
-        borderRadius: BorderRadius.circular(BehtarRadii.pill),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: BehtarSpacing.sm,
-          vertical: BehtarSpacing.xs,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: BehtarColors.primary),
-            const SizedBox(width: BehtarSpacing.xs),
-            Flexible(
-              child: Text(
-                label,
-                softWrap: true,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: BehtarColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GroupStateCard extends StatelessWidget {
-  const _GroupStateCard({
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.action,
-    this.isLoading = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final Widget? action;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: BehtarColors.mint,
-            foregroundColor: BehtarColors.primary,
-            child: isLoading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: BehtarColors.primary,
-                    ),
-                  )
-                : Icon(icon, size: 26),
-          ),
-          const SizedBox(height: BehtarSpacing.base),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: BehtarSpacing.xs),
-          Text(message, textAlign: TextAlign.center),
-          if (action != null) ...[
-            const SizedBox(height: BehtarSpacing.md),
-            action!,
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _GroupInlineMessage extends StatelessWidget {
-  const _GroupInlineMessage({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsCard(
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline_rounded, color: BehtarColors.primary),
-          const SizedBox(width: BehtarSpacing.sm),
-          Expanded(child: Text(message)),
-        ],
-      ),
-    );
-  }
-}
-
-class _InviteError extends StatelessWidget {
-  const _InviteError({required this.result});
-
-  final GroupInviteResult result;
-
-  @override
-  Widget build(BuildContext context) {
-    final (icon, message) = switch (result) {
-      GroupInviteResult.invalidCode => (
-        Icons.search_off_rounded,
-        'That invite code was not found. Check it and try again.',
-      ),
-      GroupInviteResult.expiredCode => (
-        Icons.event_busy_outlined,
-        'This invite code has expired. Ask a group member for a new one.',
-      ),
-      GroupInviteResult.accessDenied => (
-        Icons.lock_outline_rounded,
-        'You don’t have access to this group with that invite.',
-      ),
-      _ => (Icons.info_outline_rounded, 'Unable to join this group.'),
-    };
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: BehtarColors.primary),
-        const SizedBox(width: BehtarSpacing.sm),
-        Expanded(child: Text(message)),
-      ],
-    );
-  }
-}
-
-String _formatDate(DateTime date) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${months[date.month - 1]} ${date.day}, ${date.year}';
 }

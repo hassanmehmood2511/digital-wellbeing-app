@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../data/app_data.dart';
+import '../digital_wellbeing/data/app_data.dart';
 import '../groups/groups_controller.dart';
 import '../groups/groups_screen.dart';
 import '../habits/data/habit_store.dart';
 import '../settings/settings_controller.dart';
+import 'models/dashboard_data.dart';
+import 'widgets/dashboard_widgets.dart';
 
 /// Compile-time switch for the developer-only scenario preview menu.
 /// Enable with: --dart-define=dashboard_state_preview=true
-const bool _kScenarioPreviewEnabled =
-    bool.fromEnvironment('dashboard_state_preview');
-
-enum DashboardScenario {
-  firstUse,
-  completedDay,
-  empty,
-  loading,
-  error,
-}
+const bool _kScenarioPreviewEnabled = bool.fromEnvironment(
+  'dashboard_state_preview',
+);
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({this.controller, this.onOpenTab, super.key});
@@ -41,7 +36,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   static const int _tabProfile = 5;
 
   DashboardScenario _scenario = DashboardScenario.firstUse;
-  List<_HabitEntry> _habits = const [];
   SettingsController? _listenedController;
 
   // Owns the Groups data for the "View Group" action so the existing
@@ -100,10 +94,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   void _applyScenario(DashboardScenario scenario) {
-    setState(() {
-      _scenario = scenario;
-      _habits = List<_HabitEntry>.of(_dashboardDataFor(scenario).habits);
-    });
+    setState(() => _scenario = scenario);
   }
 
   void _selectScenario(DashboardScenario scenario) {
@@ -122,20 +113,19 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     if (live.isNotEmpty) {
       return live.where((habit) => habit.isCompleted).length;
     }
-    return _habits.where((habit) => habit.completed).length;
+    return DashboardData.forScenario(_scenario).completedHabits;
   }
 
   int get _totalHabits {
     final live = HabitStore.instance.habits;
     if (live.isNotEmpty) return live.length;
-    return _habits.length;
+    return DashboardData.forScenario(_scenario).totalHabits;
   }
 
   double get _progressFraction =>
       _totalHabits == 0 ? 0 : _completedCount / _totalHabits;
 
-  bool get _dayCompleted =>
-      _totalHabits > 0 && _completedCount == _totalHabits;
+  bool get _dayCompleted => _totalHabits > 0 && _completedCount == _totalHabits;
 
   // Daily Wellness is a habit-progress indicator (not an emotional mood),
   // derived from the same completion counts as Today's Progress.
@@ -149,13 +139,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   // Screen Time summary from the shared AppData singleton (the same source the
   // Screen Time screen uses). AppData has no change notifier, so this reflects
   // current values whenever the dashboard rebuilds.
-  int get _trackedUsageMinutes => AppData()
-      .apps
+  int get _trackedUsageMinutes => AppData().apps
       .where((app) => app.isTracked)
       .fold(0, (sum, app) => sum + app.usageMinutes);
 
-  int get _trackedLimitMinutes => AppData()
-      .apps
+  int get _trackedLimitMinutes => AppData().apps
       .where((app) => app.isTracked)
       .fold(0, (sum, app) => sum + app.dailyLimitMinutes);
 
@@ -368,7 +356,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Widget _buildDashboardContent(BuildContext context) {
-    final data = _dashboardDataFor(_scenario);
+    final data = DashboardData.forScenario(_scenario);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,11 +380,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  Widget _buildProgressCard(BuildContext context, _DashboardData data) {
+  Widget _buildProgressCard(BuildContext context, DashboardData data) {
     final theme = Theme.of(context);
 
     if (_totalHabits == 0) {
-      return _SectionCard(
+      return DashboardSectionCard(
         title: 'Today’s Progress',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,14 +415,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       );
     }
 
-    return _SectionCard(
+    return DashboardSectionCard(
       title: 'Today’s Progress',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              _ProgressRing(
+              DashboardProgressRing(
                 fraction: _progressFraction,
                 label: '$_completedCount/$_totalHabits',
               ),
@@ -462,13 +450,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           const SizedBox(height: BehtarSpacing.base),
           Row(
             children: [
-              _MiniStat(
+              DashboardMiniStat(
                 label: 'Focus time',
                 value: data.focusLabel,
                 icon: Icons.timer_rounded,
               ),
               const SizedBox(width: BehtarSpacing.base),
-              _MiniStat(
+              DashboardMiniStat(
                 label: 'Daily Wellness',
                 value: _wellnessStatus,
                 icon: Icons.mood_rounded,
@@ -480,9 +468,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  Widget _buildStreakCard(BuildContext context, _DashboardData data) {
+  Widget _buildStreakCard(BuildContext context, DashboardData data) {
     return Expanded(
-      child: _StatCard(
+      child: DashboardStatCard(
         icon: Icons.local_fire_department_rounded,
         iconBackground: const Color(0xFFFFF3CD),
         iconColor: Colors.orange.shade700,
@@ -493,11 +481,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  Widget _buildScreenTimeCard(BuildContext context, _DashboardData data) {
+  Widget _buildScreenTimeCard(BuildContext context, DashboardData data) {
     final usage = _trackedUsageMinutes;
     final hasUsage = usage > 0;
     return Expanded(
-      child: _StatCard(
+      child: DashboardStatCard(
         icon: Icons.phone_android_rounded,
         iconBackground: BehtarColors.mint,
         iconColor: BehtarColors.primary,
@@ -510,7 +498,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  Widget _buildPointsCard(BuildContext context, _DashboardData data) {
+  Widget _buildPointsCard(BuildContext context, DashboardData data) {
     final theme = Theme.of(context);
 
     return Card(
@@ -567,13 +555,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  Widget _buildChallengeCard(BuildContext context, _DashboardData data) {
+  Widget _buildChallengeCard(BuildContext context, DashboardData data) {
     final theme = Theme.of(context);
     final challengeFraction = data.challengeTotal == 0
         ? 0.0
         : data.challengeProgress / data.challengeTotal;
 
-    return _SectionCard(
+    return DashboardSectionCard(
       title: '7-Day Challenge',
       actionLabel: 'Open',
       onAction: () => _openTab(_tabChallenges),
@@ -651,22 +639,22 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         const SizedBox(height: BehtarSpacing.base),
         Row(
           children: [
-            _QuickActionTile(
+            DashboardQuickActionTile(
               icon: Icons.add_rounded,
               label: 'Add Habit',
               onTap: () => _openTab(_tabHabits),
             ),
-            _QuickActionTile(
+            DashboardQuickActionTile(
               icon: Icons.phone_android_rounded,
               label: 'View Screen Time',
               onTap: () => _openTab(_tabApps),
             ),
-            _QuickActionTile(
+            DashboardQuickActionTile(
               icon: Icons.emoji_events_rounded,
               label: 'Join Challenge',
               onTap: () => _openTab(_tabChallenges),
             ),
-            _QuickActionTile(
+            DashboardQuickActionTile(
               icon: Icons.group_rounded,
               label: 'View Group',
               // Opens the existing Groups list screen directly.
@@ -679,11 +667,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const _LoadingScreen();
+    return const DashboardLoadingCard();
   }
 
   Widget _buildEmptyState() {
-    return _StateCard(
+    return DashboardStateCard(
       icon: Icons.checklist_rounded,
       title: 'No habits started yet',
       description:
@@ -694,7 +682,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Widget _buildErrorState() {
-    return _StateCard(
+    return DashboardStateCard(
       icon: Icons.error_outline_rounded,
       title: 'Something went wrong',
       description: 'We could not load your dashboard. Try again in a moment.',
@@ -710,8 +698,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   String _initials(String name) {
-    final parts =
-        name.split(RegExp(r'\s+')).where((part) => part.isNotEmpty).toList();
+    final parts = name
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return '';
     final initials = StringBuffer(parts.first[0]);
     if (parts.length > 1) {
@@ -732,484 +722,4 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     if (hour < 18) return 'Good afternoon';
     return 'Good evening';
   }
-
-  _DashboardData _dashboardDataFor(DashboardScenario scenario) {
-    switch (scenario) {
-      case DashboardScenario.firstUse:
-        return _DashboardData(
-          points: 240,
-          pointsDelta: 35,
-          streak: 6,
-          focusLabel: '42 min',
-          moodLabel: 'Focused',
-          screenTimeLabel: '2h 18m',
-          screenTimeSubtitle: 'Limit: 3h',
-          challengeName: '7-Day Calm Scroll Reset',
-          challengeProgress: 4,
-          challengeTotal: 7,
-          challengeReward: 'Premium plant badge',
-          habits: const [
-            _HabitEntry(
-              title: 'Morning check-in',
-              subtitle: 'Log how you feel',
-              icon: Icons.wb_sunny_rounded,
-              completed: true,
-            ),
-            _HabitEntry(
-              title: 'No-phone before class',
-              subtitle: 'Keep your phone away for 30 mins',
-              icon: Icons.phone_iphone_rounded,
-              completed: true,
-            ),
-            _HabitEntry(
-              title: 'Read 10 pages',
-              subtitle: 'Build a learning habit',
-              icon: Icons.menu_book_rounded,
-              completed: false,
-            ),
-            _HabitEntry(
-              title: 'Stretch and reset',
-              subtitle: '2-minute movement break',
-              icon: Icons.self_improvement_rounded,
-              completed: false,
-            ),
-          ],
-          progressBreakdown: const [
-            '3/5 habits finished',
-            'Stay on track with your daily rhythm',
-            'One more habit unlocks your streak badge',
-          ],
-        );
-      case DashboardScenario.completedDay:
-        return _DashboardData(
-          points: 520,
-          pointsDelta: 80,
-          streak: 11,
-          focusLabel: '1h 12m',
-          moodLabel: 'Energized',
-          screenTimeLabel: '1h 45m',
-          screenTimeSubtitle: 'Limit: 3h',
-          challengeName: '7-Day Calm Scroll Reset',
-          challengeProgress: 7,
-          challengeTotal: 7,
-          challengeReward: 'Golden habit badge',
-          habits: const [
-            _HabitEntry(
-              title: 'Morning check-in',
-              subtitle: 'Log how you feel',
-              icon: Icons.wb_sunny_rounded,
-              completed: true,
-            ),
-            _HabitEntry(
-              title: 'No-phone before class',
-              subtitle: 'Keep your phone away for 30 mins',
-              icon: Icons.phone_iphone_rounded,
-              completed: true,
-            ),
-            _HabitEntry(
-              title: 'Read 10 pages',
-              subtitle: 'Build a learning habit',
-              icon: Icons.menu_book_rounded,
-              completed: true,
-            ),
-            _HabitEntry(
-              title: 'Stretch and reset',
-              subtitle: '2-minute movement break',
-              icon: Icons.self_improvement_rounded,
-              completed: true,
-            ),
-          ],
-          progressBreakdown: const [
-            'All habits complete',
-            'You reached your daily goal',
-            'Your challenge streak is still active',
-          ],
-        );
-      case DashboardScenario.empty:
-        return _DashboardData(
-          points: 0,
-          pointsDelta: 0,
-          streak: 0,
-          focusLabel: '0 min',
-          moodLabel: 'Fresh',
-          screenTimeLabel: 'Not tracked',
-          screenTimeSubtitle: 'No limit set yet',
-          challengeName: 'Start your first week',
-          challengeProgress: 0,
-          challengeTotal: 7,
-          challengeReward: 'Starter badge',
-          habits: const [],
-          progressBreakdown: const [
-            'Create your first habit',
-            'Set a realistic target',
-            'Build momentum one small step at a time',
-          ],
-        );
-      case DashboardScenario.loading:
-      case DashboardScenario.error:
-        return _DashboardData(
-          points: 0,
-          pointsDelta: 0,
-          streak: 0,
-          focusLabel: '—',
-          moodLabel: '—',
-          screenTimeLabel: '—',
-          screenTimeSubtitle: '—',
-          challengeName: 'Loading challenge',
-          challengeProgress: 0,
-          challengeTotal: 7,
-          challengeReward: '—',
-          habits: const [],
-          progressBreakdown: const [],
-        );
-    }
-  }
-}
-
-class _ProgressRing extends StatelessWidget {
-  const _ProgressRing({required this.fraction, required this.label});
-
-  final double fraction;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return SizedBox(
-      width: 96,
-      height: 96,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox.expand(
-            child: CircularProgressIndicator(
-              value: fraction,
-              strokeWidth: 10,
-              strokeCap: StrokeCap.round,
-              color: BehtarColors.primary,
-              backgroundColor: BehtarColors.mint,
-            ),
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: BehtarColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text('habits', style: theme.textTheme.bodySmall),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.iconBackground,
-    required this.iconColor,
-    required this.label,
-    required this.value,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final Color iconBackground;
-  final Color iconColor;
-  final String label;
-  final String value;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(BehtarSpacing.base),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconBackground,
-                borderRadius: BorderRadius.circular(BehtarRadii.control),
-              ),
-              child: Icon(icon, color: iconColor, size: 22),
-            ),
-            const SizedBox(height: BehtarSpacing.md),
-            Text(label, style: theme.textTheme.bodyMedium),
-            const SizedBox(height: BehtarSpacing.xs),
-            Text(value, style: theme.textTheme.headlineSmall),
-            const SizedBox(height: BehtarSpacing.xs),
-            Text(subtitle, style: theme.textTheme.bodySmall),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  final String title;
-  final Widget child;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(BehtarSpacing.base),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                if (actionLabel != null && onAction != null)
-                  TextButton(
-                    onPressed: onAction,
-                    child: Text(actionLabel!),
-                  ),
-              ],
-            ),
-            const SizedBox(height: BehtarSpacing.base),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniStat extends StatelessWidget {
-  const _MiniStat({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: BehtarColors.mint,
-          borderRadius: BorderRadius.circular(BehtarRadii.control),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(BehtarSpacing.sm),
-          child: Row(
-            children: [
-              Icon(icon, color: BehtarColors.primary, size: 18),
-              const SizedBox(width: BehtarSpacing.xs),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    Text(
-                      value,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: BehtarColors.primaryText,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _QuickActionTile extends StatelessWidget {
-  const _QuickActionTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(BehtarRadii.control),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: BehtarSpacing.sm),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: BehtarColors.mint,
-                child: Icon(icon, color: BehtarColors.primary, size: 24),
-              ),
-              const SizedBox(height: BehtarSpacing.sm),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: BehtarColors.primaryText,
-                    ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StateCard extends StatelessWidget {
-  const _StateCard({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.buttonLabel,
-    required this.onButton,
-  });
-
-  final IconData icon;
-  final String title;
-  final String description;
-  final String buttonLabel;
-  final VoidCallback onButton;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(BehtarSpacing.xl),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: BehtarColors.mint,
-              child: Icon(icon, color: BehtarColors.primary, size: 28),
-            ),
-            const SizedBox(height: BehtarSpacing.base),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: BehtarSpacing.sm),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: BehtarSpacing.base),
-            FilledButton(
-              onPressed: onButton,
-              child: Text(buttonLabel),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingScreen extends StatelessWidget {
-  const _LoadingScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(BehtarSpacing.xl),
-        child: Center(
-          child: Column(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: BehtarSpacing.base),
-              Text('Loading your dashboard...'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DashboardData {
-  const _DashboardData({
-    required this.points,
-    required this.pointsDelta,
-    required this.streak,
-    required this.focusLabel,
-    required this.moodLabel,
-    required this.screenTimeLabel,
-    required this.screenTimeSubtitle,
-    required this.challengeName,
-    required this.challengeProgress,
-    required this.challengeTotal,
-    required this.challengeReward,
-    required this.habits,
-    required this.progressBreakdown,
-  });
-
-  final int points;
-  final int pointsDelta;
-  final int streak;
-  final String focusLabel;
-  final String moodLabel;
-  final String screenTimeLabel;
-  final String screenTimeSubtitle;
-  final String challengeName;
-  final int challengeProgress;
-  final int challengeTotal;
-  final String challengeReward;
-  final List<_HabitEntry> habits;
-  final List<String> progressBreakdown;
-}
-
-class _HabitEntry {
-  const _HabitEntry({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.completed,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final bool completed;
 }

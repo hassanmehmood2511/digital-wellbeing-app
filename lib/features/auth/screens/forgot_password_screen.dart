@@ -1,9 +1,10 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../widgets/auth_background_painter.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   /// Called with the email after validation passes.
@@ -12,15 +13,10 @@ class ForgotPasswordScreen extends StatefulWidget {
   final Future<void> Function(String email)? onSendLink;
   final VoidCallback? onBackToLogin;
 
-  const ForgotPasswordScreen({
-    super.key,
-    this.onSendLink,
-    this.onBackToLogin,
-  });
+  const ForgotPasswordScreen({super.key, this.onSendLink, this.onBackToLogin});
 
   @override
-  State<ForgotPasswordScreen> createState() =>
-      _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
@@ -72,9 +68,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _startCooldown() {
@@ -296,9 +292,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.email],
-            inputFormatters: [
-              FilteringTextInputFormatter.deny(RegExp(r'\s')),
-            ],
+            inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'\s'))],
             onFieldSubmitted: (_) => _sendLink(),
             style: GoogleFonts.poppins(
               fontSize: 13.5 * scale,
@@ -434,8 +428,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               _cooldown > 0
                   ? 'Resend link in ${_cooldown}s'
                   : _isLoading
-                      ? 'Sending...'
-                      : 'Resend link',
+                  ? 'Sending...'
+                  : 'Resend link',
               style: GoogleFonts.poppins(
                 fontSize: 12.5 * scale,
                 fontWeight: FontWeight.w600,
@@ -471,11 +465,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     // Scale is derived from both width and height,
     // so the layout fits correctly on every device.
-    final double scale = (screen.width / 390 < screen.height / 800
-            ? screen.width / 390
-            : screen.height / 800)
-        .clamp(0.8, 1.35)
-        .toDouble();
+    final double scale =
+        (screen.width / 390 < screen.height / 800
+                ? screen.width / 390
+                : screen.height / 800)
+            .clamp(0.8, 1.35)
+            .toDouble();
 
     return Scaffold(
       backgroundColor: background,
@@ -483,23 +478,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         fit: StackFit.expand,
         children: [
           const RepaintBoundary(
-            child: CustomPaint(painter: _BackgroundPainter()),
+            child: CustomPaint(painter: AuthBackgroundPainter()),
           ),
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final double horizontalPadding =
-                    (constraints.maxWidth * 0.065)
-                        .clamp(20.0, 32.0)
-                        .toDouble();
+                final double horizontalPadding = (constraints.maxWidth * 0.065)
+                    .clamp(20.0, 32.0)
+                    .toDouble();
 
                 return SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Align(
                       alignment: Alignment.topCenter,
                       child: ConstrainedBox(
@@ -538,8 +533,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ),
 
                               SizedBox(height: 22 * scale),
-
-                              
                             ],
                           ),
                         ),
@@ -557,84 +550,3 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 }
 
 // Decorative background shapes (same as the other auth screens).
-class _BackgroundPainter extends CustomPainter {
-  const _BackgroundPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-
-    // Top-left organic shape.
-    final Path topPath = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width * 0.30, 0)
-      ..cubicTo(
-        size.width * 0.23,
-        size.height * 0.09,
-        size.width * 0.12,
-        size.height * 0.09,
-        0,
-        size.height * 0.14,
-      )
-      ..close();
-
-    paint.color = const Color(0xFFE8F5E9);
-    canvas.drawPath(topPath, paint);
-
-    // Bottom wave.
-    // Uncomment this section whenever you want the bottom wave.
-    // final Path bottomWave = Path()
-    //   ..moveTo(0, size.height)
-    //   ..cubicTo(
-    //     size.width * 0.25,
-    //     size.height * 0.88,
-    //     size.width * 0.30,
-    //     size.height * 0.98,
-    //     size.width * 0.50,
-    //     size.height * 0.98,
-    //   )
-    //   ..cubicTo(
-    //     size.width * 0.70,
-    //     size.height * 0.98,
-    //     size.width * 0.80,
-    //     size.height * 0.88,
-    //     size.width,
-    //     size.height * 0.88,
-    //   )
-    //   ..lineTo(size.width, size.height)
-    //   ..close();
-
-    // paint.color = const Color(0x3381C784);
-    // canvas.drawPath(bottomWave, paint);
-
-    // Bottom-right decorative leaf.
-    // Uncomment this section whenever you want the leaf.
-    // canvas.save();
-    // canvas.translate(size.width * 0.92, size.height * 0.945);
-    // canvas.rotate(2.45);
-    // canvas.scale(0.85);
-
-    // final Path leafPath = Path()
-    //   ..moveTo(0, 0)
-    //   ..quadraticBezierTo(-25, -34, 0, -70)
-    //   ..quadraticBezierTo(25, -35, 0, 0)
-    //   ..close();
-
-    // paint.color = const Color(0x7B81C784);
-    // canvas.drawPath(leafPath, paint);
-
-    // final Paint veinPaint = Paint()
-    //   ..color = const Color(0x734CAF50)
-    //   ..strokeWidth = 1.2
-    //   ..style = PaintingStyle.stroke
-    //   ..isAntiAlias = true;
-
-    // canvas.drawLine(const Offset(0, 0), const Offset(0, -61), veinPaint);
-    // canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) => false;
-}

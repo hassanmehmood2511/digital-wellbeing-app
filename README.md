@@ -7,49 +7,17 @@ service connected.
 
 ## Feature status
 
-### Implemented
-
-- **Challenges:** Browse sample 7-day challenges; create a challenge with a
-  predefined or custom goal, start date, and public/private visibility; preview
-  and save it locally; join or leave with confirmation; and record daily
-  progress with completion feedback. Private visibility and invited access are
-  represented in local model state only.
-- **Profile:** View the sample profile and edit the name and phone number. The
-  sign-up email is read-only; profile changes are held in memory.
-- **Settings:** Select English or Urdu and toggle notification/reminder
-  preferences. These are demo preferences kept in memory; language selection
-  does not localize the app and no notification service is connected.
-- **Account settings:** View the sample email and open confirmation dialogs for
-  sign-out and account deletion. These actions do not change an account or
-  delete data.
-- **App shell and design system:** Material 3 theme, shared Behtar color,
-  typography, spacing and radius tokens, and bottom navigation.
-
-### In Progress (navigation placeholders only)
-
-No active work on these areas is documented in the repository.
-
-- **Home:** Displays a welcome message; no dashboard data or interactions yet.
-- **Habits:** Displays a placeholder; habit creation and tracking are not
-  implemented.
-- **Progress tracking:** Displays a placeholder; there are no charts or
-  cross-feature progress summaries.
-- **Apps:** Displays a placeholder; app selection or device-usage controls are
-  not implemented.
-
-### Planned / not started
-
-The repository includes empty feature directories for `auth`, `onboarding`,
-`digital_wellbeing`, and `groups`. They contain no feature implementation or
-specification yet. These names and the placeholder destinations are the only
-roadmap indicators in the codebase; no separate product roadmap exists. Do not
-treat these areas as shipped features.
+The app includes screens for authentication and onboarding, a home dashboard,
+habits, challenges, groups, progress/rewards, profile and settings, and digital
+wellbeing. These are frontend/demo flows: data is local or in-memory, and no
+backend, account service, notification service, or device-usage integration is
+configured. See the relevant feature folders for implementation details.
 
 ## Technology
 
 - **Flutter** with **Dart** (`pubspec.yaml` requires Dart `^3.12.0`)
 - **Material 3** widgets and a shared theme in `lib/core/theme/app_theme.dart`
-- **google_fonts** for Poppins and Inter; **cupertino_icons** for icon assets
+- **google_fonts** for Poppins and Inter
 - **flutter_test** and **flutter_lints** for tests and static analysis
 - Android configuration uses Kotlin DSL, Java 17, Android Gradle Plugin 9.0.1,
   and Kotlin 2.3.20.
@@ -63,23 +31,33 @@ this repository.
 lib/
   main.dart
   core/
-    routing/       # App navigation shell
-    theme/         # Behtar theme and design tokens
-    widgets/       # Shared bottom navigation
-    constants/     # Empty
-    utils/         # Empty
-  features/
-    challenges/    # Challenge model, controller, and screens
-    settings/      # Profile, account, language, and notification settings
-    auth/                  # Empty
-    digital_wellbeing/     # Empty
-    groups/                # Empty
-    habits/                # Empty
-    home/                  # Empty
-    onboarding/            # Empty
+  routing/                   # App navigation shell
+  theme/                     # Behtar theme and design tokens
+  widgets/                   # Shared bottom navigation
+features/
+  auth/
+    screens/                  # Sign-up, login, and password recovery
+    widgets/                  # Shared authentication UI
+  challenges/                 # Challenge model, controller, and screens
+  digital_wellbeing/
+    data/                     # App usage data source
+    models/                   # App usage model
+    screens/                  # Usage overview, limits, and app settings
+  groups/                     # Group models, controller, and screens
+  habits/
+    data/                     # Habit store and sample data
+    models/                   # Habit model
+    presentation/             # Habit screens and widgets
+  home/
+    models/                   # Dashboard preview data
+    widgets/                  # Reusable dashboard components
+  onboarding_screen/          # Onboarding screens and shared layout
+  rewards/                    # Progress and rewards
+  settings/                   # Profile, account, language, and notifications
+  splashscreen/
 test/
-  core/            # Navigation widget tests
-  features/        # Challenges and settings tests
+  core/                       # Navigation widget tests
+  features/                   # Feature tests
 assets/
   fonts/
   icons/

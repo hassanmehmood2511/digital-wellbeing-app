@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../widgets/auth_background_painter.dart';
+
 class SignUpScreen extends StatefulWidget {
   /// Called after all validation passes. Connect your backend here.
   /// The phone number is in full international format, e.g. +923001234567.
@@ -472,7 +474,7 @@ class _SignUpScreenState extends State<SignUpScreen>
         fit: StackFit.expand,
         children: [
           const RepaintBoundary(
-            child: CustomPaint(painter: _BackgroundPainter()),
+            child: CustomPaint(painter: AuthBackgroundPainter()),
           ),
           SafeArea(
             child: LayoutBuilder(
@@ -893,85 +895,4 @@ class _SignUpScreenState extends State<SignUpScreen>
       ),
     );
   }
-}
-
-// Decorative background shapes (same as the splash and login screens).
-class _BackgroundPainter extends CustomPainter {
-  const _BackgroundPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-
-    // Top-left organic shape.
-    final Path topPath = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width * 0.30, 0)
-      ..cubicTo(
-        size.width * 0.23,
-        size.height * 0.09,
-        size.width * 0.12,
-        size.height * 0.09,
-        0,
-        size.height * 0.14,
-      )
-      ..close();
-
-    paint.color = const Color(0xFFE8F5E9);
-    canvas.drawPath(topPath, paint);
-
-    // // Bottom wave.
-    // final Path bottomWave = Path()
-    //   ..moveTo(0, size.height)
-    //   ..cubicTo(
-    //     size.width * 0.25,
-    //     size.height * 0.88,
-    //     size.width * 0.30,
-    //     size.height * 0.98,
-    //     size.width * 0.50,
-    //     size.height * 0.98,
-    //   )
-    //   ..cubicTo(
-    //     size.width * 0.70,
-    //     size.height * 0.98,
-    //     size.width * 0.80,
-    //     size.height * 0.88,
-    //     size.width,
-    //     size.height * 0.88,
-    //   )
-    //   ..lineTo(size.width, size.height)
-    //   ..close();
-
-    // paint.color = const Color(0x3381C784);
-    // canvas.drawPath(bottomWave, paint);
-
-    // // Bottom-right decorative leaf.
-    // canvas.save();
-    // canvas.translate(size.width * 0.92, size.height * 0.945);
-    // canvas.rotate(2.45);
-    // canvas.scale(0.85);
-
-    // final Path leafPath = Path()
-    //   ..moveTo(0, 0)
-    //   ..quadraticBezierTo(-25, -34, 0, -70)
-    //   ..quadraticBezierTo(25, -35, 0, 0)
-    //   ..close();
-
-    // paint.color = const Color(0x7B81C784);
-    // canvas.drawPath(leafPath, paint);
-
-    // final Paint veinPaint = Paint()
-    //   ..color = const Color(0x734CAF50)
-    //   ..strokeWidth = 1.2
-    //   ..style = PaintingStyle.stroke
-    //   ..isAntiAlias = true;
-
-    // canvas.drawLine(const Offset(0, 0), const Offset(0, -61), veinPaint);
-    // canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) => false;
 }

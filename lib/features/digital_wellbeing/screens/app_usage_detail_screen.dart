@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
-import 'package:digital_wellbeing_app/models/app_usage.dart';
-import 'package:digital_wellbeing_app/data/app_data.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usage.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/data/app_data.dart';
 import 'package:flutter/services.dart';
 
 class AppUsageDetailScreen extends StatefulWidget {
@@ -18,13 +18,15 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final currentAppData = AppData().apps.firstWhere(
-          (app) => app.appName == widget.appData.appName,
+      (app) => app.appName == widget.appData.appName,
       orElse: () => widget.appData,
     );
 
-    final percentage = currentAppData.usageMinutes / currentAppData.dailyLimitMinutes;
+    final percentage =
+        currentAppData.usageMinutes / currentAppData.dailyLimitMinutes;
     final isOverLimit = percentage > 1.0;
-    final timeSaved = currentAppData.dailyLimitMinutes - currentAppData.usageMinutes;
+    final timeSaved =
+        currentAppData.dailyLimitMinutes - currentAppData.usageMinutes;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -73,9 +75,19 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                   children: [
                     Text(
                       _formatMinutes(currentAppData.usageMinutes),
-                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
-                    const Text('used', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                    const Text(
+                      'used',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -93,7 +105,9 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
               child: Row(
                 children: [
                   Icon(
-                    isOverLimit ? Icons.warning_rounded : Icons.check_circle_outline,
+                    isOverLimit
+                        ? Icons.warning_rounded
+                        : Icons.check_circle_outline,
                     color: AppColors.primary,
                     size: 32,
                   ),
@@ -123,17 +137,38 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
 
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text('Detailed Stats', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              child: Text(
+                'Detailed Stats',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ),
             const SizedBox(height: 12),
-            _buildStatRow('Daily Limit', _formatMinutes(currentAppData.dailyLimitMinutes), Icons.timer_outlined),
-            _buildStatRow('Time Used', _formatMinutes(currentAppData.usageMinutes), Icons.phone_android),
+            _buildStatRow(
+              'Daily Limit',
+              _formatMinutes(currentAppData.dailyLimitMinutes),
+              Icons.timer_outlined,
+            ),
+            _buildStatRow(
+              'Time Used',
+              _formatMinutes(currentAppData.usageMinutes),
+              Icons.phone_android,
+            ),
             _buildStatRow(
               'Remaining',
-              isOverLimit ? 'Exceeded by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}' : _formatMinutes(timeSaved),
+              isOverLimit
+                  ? 'Exceeded by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}'
+                  : _formatMinutes(timeSaved),
               isOverLimit ? Icons.trending_up : Icons.trending_down,
             ),
-            _buildStatRow('Usage Percentage', '${(percentage * 100).toStringAsFixed(0)}%', Icons.pie_chart_outline),
+            _buildStatRow(
+              'Usage Percentage',
+              '${(percentage * 100).toStringAsFixed(0)}%',
+              Icons.pie_chart_outline,
+            ),
             const SizedBox(height: 32),
 
             Container(
@@ -149,9 +184,20 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 24),
+                      Icon(
+                        Icons.lightbulb_outline,
+                        color: AppColors.primary,
+                        size: 24,
+                      ),
                       const SizedBox(width: 8),
-                      const Text('Suggestion', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      const Text(
+                        'Suggestion',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -194,7 +240,14 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
           Icon(icon, color: AppColors.textSecondary, size: 20),
           const SizedBox(width: 12),
           Expanded(child: Text(label, style: AppTypography.body)),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
         ],
       ),
     );
@@ -202,7 +255,9 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
 
   void _showEditLimitDialog(BuildContext context, AppUsage currentAppData) {
     int newLimit = currentAppData.dailyLimitMinutes;
-    final TextEditingController _limitController = TextEditingController(text: currentAppData.dailyLimitMinutes.toString());
+    final TextEditingController limitController = TextEditingController(
+      text: currentAppData.dailyLimitMinutes.toString(),
+    );
 
     showDialog(
       context: context,
@@ -211,7 +266,9 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               title: Text('Edit Daily Limit', style: AppTypography.h3),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -219,7 +276,6 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                   Text(currentAppData.appName, style: AppTypography.body),
                   const SizedBox(height: 16),
 
-                  // ✅ FIXED SLIDER: Max is now 1440 (24 hours)
                   Slider(
                     value: newLimit.clamp(15, 1440).toDouble(),
                     min: 15,
@@ -230,27 +286,37 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                     onChanged: (double value) {
                       setDialogState(() {
                         newLimit = value.round();
-                        _limitController.text = newLimit.toString();
+                        limitController.text = newLimit.toString();
                       });
                     },
                   ),
 
-                  // ✅ ONLY ONE Text widget showing slider value (No duplicates!)
                   Text(
                     'Slider: ${_formatMinutes(newLimit.clamp(15, 1440))}',
-                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
-                  const Text('Or enter manually (in minutes):', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                  const Text(
+                    'Or enter manually (in minutes):',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextField(
-                    controller: _limitController,
+                    controller: limitController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
                       hintText: 'Enter minutes (e.g., 300 for 5h)',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       filled: true,
                       fillColor: AppColors.mint,
                     ),
@@ -266,14 +332,21 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                   const SizedBox(height: 12),
                   Text(
                     'Total Limit: ${_formatMinutes(newLimit)}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primary),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -281,7 +354,9 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${currentAppData.appName} limit updated'),
+                        content: Text(
+                          '${currentAppData.appName} limit updated',
+                        ),
                         backgroundColor: AppColors.primary,
                       ),
                     );

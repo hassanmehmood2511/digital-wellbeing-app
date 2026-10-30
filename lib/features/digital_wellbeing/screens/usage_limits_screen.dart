@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
-import 'package:digital_wellbeing_app/data/app_data.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/data/app_data.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class UsageLimitsScreen extends StatefulWidget {
@@ -34,11 +35,21 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
               border: Border.all(color: AppColors.border, width: 1),
             ),
             child: SwitchListTile(
-              title: Text('Gentle Reminders', style: AppTypography.h3.copyWith(fontSize: 20)),
-              subtitle: Text('Warn me when I reach 80% of my daily limit', style: AppTypography.body),
+              title: Text(
+                'Gentle Reminders',
+                style: AppTypography.h3.copyWith(fontSize: 20),
+              ),
+              subtitle: Text(
+                'Warn me when I reach 80% of my daily limit',
+                style: AppTypography.body,
+              ),
               value: _warningEnabled,
-              activeColor: AppColors.primary,
-              onChanged: (bool value) { setState(() { _warningEnabled = value; }); },
+              activeThumbColor: AppColors.primary,
+              onChanged: (bool value) {
+                setState(() {
+                  _warningEnabled = value;
+                });
+              },
             ),
           ),
           const SizedBox(height: 24),
@@ -50,7 +61,7 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
     );
   }
 
-  Widget _buildAppLimitCard(app) {
+  Widget _buildAppLimitCard(AppUsage app) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -144,7 +155,11 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
         iconData = FontAwesomeIcons.mobileScreen;
     }
 
-    return FaIcon(iconData, color: AppColors.primary, size: 22); // Changed to FaIcon
+    return FaIcon(
+      iconData,
+      color: AppColors.primary,
+      size: 22,
+    ); // Changed to FaIcon
   }
 
   String _formatMinutes(int minutes) {
