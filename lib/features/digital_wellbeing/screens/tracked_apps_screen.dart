@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // NEW IMPORT
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
-import 'package:digital_wellbeing_app/data/app_data.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/data/app_data.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usage.dart';
 
 class TrackedAppsScreen extends StatefulWidget {
   const TrackedAppsScreen({super.key});
@@ -39,7 +40,7 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
     );
   }
 
-  Widget _buildAppListItem(app) {
+  Widget _buildAppListItem(AppUsage app) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -57,7 +58,6 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
               color: AppColors.mint,
               borderRadius: BorderRadius.circular(12),
             ),
-            // UPDATED: Now uses real brand icons
             child: Center(child: _getAppIcon(app.appName)),
           ),
           const SizedBox(width: 16),
@@ -74,7 +74,9 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
             value: app.isTracked,
             activeColor: AppColors.primary,
             checkColor: AppColors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
             onChanged: (bool? value) {
               setState(() {
                 AppData().toggleTracking(app.appName);
@@ -87,20 +89,24 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
   }
 
   void _showAddAppDialog(BuildContext context) {
-    final TextEditingController _controller = TextEditingController();
+    final TextEditingController controller = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: Text('Add New App', style: AppTypography.h3),
           content: TextField(
-            controller: _controller,
+            controller: controller,
             decoration: InputDecoration(
               hintText: 'Enter app name (e.g., LinkedIn)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               filled: true,
               fillColor: AppColors.mint,
             ),
@@ -108,21 +114,29 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
-                if (_controller.text.trim().isNotEmpty) {
-                  AppData().addNewApp(_controller.text.trim());
+                if (controller.text.trim().isNotEmpty) {
+                  AppData().addNewApp(controller.text.trim());
                   Navigator.pop(context);
                   setState(() {});
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: const Text('Add', style: TextStyle(color: AppColors.white)),
+              child: const Text(
+                'Add',
+                style: TextStyle(color: AppColors.white),
+              ),
             ),
           ],
         );
@@ -130,10 +144,8 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
     );
   }
 
-  // UPDATED: Real Brand Icons using FontAwesome
-  // UPDATED for v11.0.0: Use FaIconData instead of IconData
   Widget _getAppIcon(String appName) {
-    final FaIconData iconData; // <-- Changed from IconData to FaIconData
+    final FaIconData iconData;
     switch (appName.toLowerCase()) {
       case 'instagram':
         iconData = FontAwesomeIcons.instagram;
@@ -163,5 +175,4 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
     }
     return FaIcon(iconData, color: AppColors.primary, size: 22);
   }
-
 }

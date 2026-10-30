@@ -10,7 +10,6 @@ import '../../features/rewards/progress_screen.dart';
 import '../../features/settings/settings_controller.dart';
 import '../../features/settings/profile_screen.dart';
 import '../../features/habits/presentation/screens/habit_list_screen.dart';
-import '../theme/app_theme.dart';
 import '../widgets/behtar_bottom_navigation_bar.dart';
 
 class AppNavigationShell extends StatefulWidget {
@@ -77,43 +76,6 @@ class _AppNavigationShellState extends State<AppNavigationShell> {
         builder: (_) => GroupsScreen(
           controller: _groupsController,
           currentUserName: widget.settingsController.fullName,
-        ),
-      ),
-    );
-  }
-}
-
-class _DestinationPlaceholder extends StatelessWidget {
-  const _DestinationPlaceholder({
-    required this.title,
-    required this.message,
-    required this.icon,
-  });
-
-  final String title;
-  final String message;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(BehtarSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: BehtarColors.mint,
-                foregroundColor: BehtarColors.primary,
-                child: Icon(icon, size: 30),
-              ),
-              const SizedBox(height: BehtarSpacing.base),
-              Text(message, textAlign: TextAlign.center),
-            ],
-          ),
         ),
       ),
     );
