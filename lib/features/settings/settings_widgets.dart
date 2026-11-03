@@ -120,6 +120,49 @@ class SettingsActionTile extends StatelessWidget {
   }
 }
 
+class SettingsSwitchTile extends StatelessWidget {
+  const SettingsSwitchTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+    super.key,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: BehtarSpacing.base,
+        vertical: BehtarSpacing.xs,
+      ),
+      leading: CircleAvatar(
+        radius: 22,
+        backgroundColor: BehtarColors.mint,
+        foregroundColor: BehtarColors.primary,
+        child: Icon(icon, size: 21),
+      ),
+      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: BehtarSpacing.xs),
+        child: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+      ),
+      trailing: Switch(
+        value: value,
+        onChanged: onChanged,
+      ),
+      onTap: () => onChanged(!value),
+    );
+  }
+}
+
 class SettingsSaveButton extends StatelessWidget {
   const SettingsSaveButton({
     required this.isSaving,

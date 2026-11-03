@@ -18,7 +18,9 @@ Future<void> main() async {
 }
 
 class BehtarApp extends StatefulWidget {
-  const BehtarApp({super.key});
+  const BehtarApp({this.home, super.key});
+
+  final Widget? home;
 
   @override
   State<BehtarApp> createState() => _BehtarAppState();
@@ -192,7 +194,7 @@ class _BehtarAppState extends State<BehtarApp> {
       title: 'Behtar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: SplashScreen(onFinished: _goToLogin),
+      home: widget.home ?? AppNavigationShell(settingsController: _settingsController),
     );
   }
 }

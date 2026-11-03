@@ -130,31 +130,29 @@ class _PointsHero extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(BehtarSpacing.lg),
       decoration: BoxDecoration(
-        color: BehtarColors.primaryText,
-        borderRadius: BorderRadius.circular(BehtarRadii.hero),
+        color: BehtarColors.surface,
+        borderRadius: BorderRadius.circular(BehtarRadii.card),
+        border: Border.all(color: BehtarColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: BehtarColors.primaryText.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.spa_rounded,
-                color: BehtarColors.sage,
-                size: 21,
-              ),
-              const SizedBox(width: BehtarSpacing.sm),
-              Text(
-                'YOUR REWARDS',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: BehtarColors.sage,
-                  letterSpacing: 1.3,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          Text(
+            'YOUR REWARDS',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: BehtarColors.primary,
+              letterSpacing: 1.3,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: BehtarSpacing.lg),
+          const SizedBox(height: BehtarSpacing.md),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -166,37 +164,38 @@ class _PointsHero extends StatelessWidget {
                       '$balance',
                       style: Theme.of(context).textTheme.headlineLarge
                           ?.copyWith(
-                            color: BehtarColors.surface,
-                            fontSize: 42,
+                            color: BehtarColors.textPrimary,
+                            fontSize: 40,
                             fontWeight: FontWeight.w700,
                           ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       'points to celebrate',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: BehtarColors.surface.withValues(alpha: 0.82),
+                        color: BehtarColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  color: BehtarColors.surface.withValues(alpha: 0.10),
+                width: 56,
+                height: 56,
+                decoration: const BoxDecoration(
+                  color: BehtarColors.mint,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.stars_rounded,
-                  color: BehtarColors.sage,
-                  size: 34,
+                  color: BehtarColors.primary,
+                  size: 32,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: BehtarSpacing.lg),
-          Divider(color: BehtarColors.surface.withValues(alpha: 0.18)),
+          const SizedBox(height: BehtarSpacing.base),
+          const Divider(color: BehtarColors.border),
           const SizedBox(height: BehtarSpacing.sm),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -204,13 +203,14 @@ class _PointsHero extends StatelessWidget {
               Text(
                 'Lifetime points earned',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: BehtarColors.surface.withValues(alpha: 0.82),
+                  color: BehtarColors.textSecondary,
                 ),
               ),
               Text(
                 '$lifetimeEarned',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: BehtarColors.surface,
+                  color: BehtarColors.textPrimary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -291,39 +291,212 @@ class _MilestoneCard extends StatelessWidget {
   final int currentPoints;
   final IconData icon;
 
+  void _showMilestoneDetails(BuildContext context) {
+    final unlocked = currentPoints >= points;
+    final progressFraction = (currentPoints / points).clamp(0.0, 1.0);
+    final remainingPoints = (points - currentPoints).clamp(0, points);
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: BehtarColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bottomSheetContext) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+          BehtarSpacing.lg,
+          BehtarSpacing.lg,
+          BehtarSpacing.lg,
+          BehtarSpacing.xl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: BehtarColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: BehtarSpacing.lg),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: unlocked ? BehtarColors.mint : BehtarColors.background,
+                shape: BoxShape.circle,
+                border: Border.all(color: BehtarColors.border),
+              ),
+              child: Icon(
+                unlocked ? icon : Icons.lock_outline_rounded,
+                color: unlocked
+                    ? BehtarColors.primary
+                    : BehtarColors.secondaryText,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: BehtarSpacing.base),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: unlocked
+                    ? BehtarColors.mint
+                    : BehtarColors.border.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(BehtarRadii.pill),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    unlocked ? Icons.check_circle_rounded : Icons.lock_rounded,
+                    size: 14,
+                    color: unlocked
+                        ? BehtarColors.primary
+                        : BehtarColors.secondaryText,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    unlocked ? 'UNLOCKED' : 'LOCKED MILESTONE',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: unlocked
+                          ? BehtarColors.primary
+                          : BehtarColors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: BehtarSpacing.md),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: BehtarSpacing.xs),
+            Text(
+              unlocked
+                  ? 'Congratulations! You reached $points lifetime points and achieved this milestone.'
+                  : 'Earn $points lifetime points by completing habits and challenges to unlock this milestone.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: BehtarColors.secondaryText,
+                  ),
+            ),
+            const SizedBox(height: BehtarSpacing.lg),
+            Container(
+              padding: const EdgeInsets.all(BehtarSpacing.base),
+              decoration: BoxDecoration(
+                color: BehtarColors.background,
+                borderRadius: BorderRadius.circular(BehtarRadii.control),
+                border: Border.all(color: BehtarColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Progress',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        '$currentPoints / $points points',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: unlocked
+                              ? BehtarColors.primary
+                              : BehtarColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: BehtarSpacing.sm),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(BehtarRadii.pill),
+                    child: LinearProgressIndicator(
+                      value: progressFraction,
+                      minHeight: 10,
+                      color: BehtarColors.primary,
+                      backgroundColor: BehtarColors.mint,
+                    ),
+                  ),
+                  const SizedBox(height: BehtarSpacing.xs),
+                  Text(
+                    unlocked
+                        ? 'Requirement completed!'
+                        : 'Need $remainingPoints more points to unlock',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: unlocked
+                              ? BehtarColors.primary
+                              : BehtarColors.secondaryText,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: BehtarSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(bottomSheetContext),
+                child: const Text('Close'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final unlocked = currentPoints >= points;
-    return Container(
-      padding: const EdgeInsets.all(BehtarSpacing.md),
-      decoration: BoxDecoration(
-        color: unlocked ? BehtarColors.surface : BehtarColors.background,
+    return Material(
+      color: unlocked ? BehtarColors.surface : BehtarColors.background,
+      borderRadius: BorderRadius.circular(BehtarRadii.control),
+      child: InkWell(
+        onTap: () => _showMilestoneDetails(context),
         borderRadius: BorderRadius.circular(BehtarRadii.control),
-        border: Border.all(color: BehtarColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            unlocked ? icon : Icons.lock_outline_rounded,
-            color: unlocked
-                ? BehtarColors.primary
-                : BehtarColors.secondaryText,
-            size: 22,
+        child: Container(
+          padding: const EdgeInsets.all(BehtarSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(BehtarRadii.control),
+            border: Border.all(color: BehtarColors.border),
           ),
-          const SizedBox(height: BehtarSpacing.md),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                unlocked ? icon : Icons.lock_outline_rounded,
+                color: unlocked
+                    ? BehtarColors.primary
+                    : BehtarColors.secondaryText,
+                size: 22,
+              ),
+              const SizedBox(height: BehtarSpacing.md),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: BehtarSpacing.xs),
+              Text(
+                unlocked ? 'Unlocked' : '$points points',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
           ),
-          const SizedBox(height: BehtarSpacing.xs),
-          Text(
-            unlocked ? 'Unlocked' : '$points points',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
+        ),
       ),
     );
   }

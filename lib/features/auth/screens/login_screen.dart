@@ -490,11 +490,14 @@ class _LoginScreenState extends State<LoginScreen>
                                               },
                                         ),
                                         SizedBox(width: 11 * scale),
-                                        Text(
-                                          'Continue with Google',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 13 * scale,
-                                            fontWeight: FontWeight.w500,
+                                        Flexible(
+                                          child: Text(
+                                            'Continue with Google',
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13 * scale,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
                                         ),
                                       ],
