@@ -15,12 +15,12 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  static const Color primaryGreen = Color(0xFF2E7D32);
-  static const Color sageGreen = Color(0xFFA5D6A7);
-  static const Color background = Color(0xFFF5FAF5);
-  static const Color primaryText = Color(0xFF1B4332);
-  static const Color secondaryText = Color(0xFF5C6B63);
-  static const Color borderColor = Color(0xFFDDE8DD);
+  static const Color primaryGreen = Color(0xFF10B982);
+  static const Color sageGreen = Color(0xFF667873);
+  static const Color background = Color(0xFFF4F8F7);
+  static const Color primaryText = Color(0xFF172B27);
+  static const Color secondaryText = Color(0xFF667873);
+  static const Color borderColor = Color(0xFFDCE8E3);
 
   late final AnimationController _progressController;
   late final AnimationController _blinkController;
@@ -281,7 +281,7 @@ class _SplashScreenState extends State<SplashScreen>
             width: 16 * scale,
             height: 16 * scale,
             decoration: const BoxDecoration(
-              color: Color(0xFF317E3D),
+              color: const Color(0xFF075B49),
               shape: BoxShape.circle,
             ),
           ),
@@ -318,7 +318,7 @@ class _SplashScreenState extends State<SplashScreen>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20 * scale),
                 border: Border.all(
-                  color: const Color(0xFF317E3D),
+                  color: const Color(0xFF075B49),
                   width: 8 * scale,
                 ),
               ),
@@ -345,10 +345,10 @@ class FeatureItem extends StatelessWidget {
     this.scale = 1,
   });
 
-  static const Color primaryGreen = Color(0xFF2E7D32);
-  static const Color primaryText = Color(0xFF1B4332);
-  static const Color mint = Color(0xFFE8F5E9);
-  static const Color borderColor = Color(0xFFDDE8DD);
+  static const Color primaryGreen = Color(0xFF10B982);
+  static const Color primaryText = Color(0xFF172B27);
+  static const Color mint = Color(0xFFD0FAE4);
+  static const Color borderColor = Color(0xFFDCE8E3);
 
   @override
   Widget build(BuildContext context) {
@@ -413,7 +413,7 @@ class _BackgroundPainter extends CustomPainter {
       )
       ..close();
 
-    paint.color = const Color(0xFFE8F5E9);
+    paint.color = const Color(0xFFD0FAE4);
     canvas.drawPath(topPath, paint);
 
     // Bottom wave.
@@ -438,7 +438,7 @@ class _BackgroundPainter extends CustomPainter {
       ..lineTo(size.width, size.height)
       ..close();
 
-    paint.color = const Color(0x3381C784);
+    paint.color = const Color(0x3310B982);
     canvas.drawPath(bottomWave, paint);
 
     // Bottom-right decorative leaf.
@@ -453,11 +453,11 @@ class _BackgroundPainter extends CustomPainter {
       ..quadraticBezierTo(25, -35, 0, 0)
       ..close();
 
-    paint.color = const Color(0x7B81C784);
+    paint.color = const Color(0x7B10B982);
     canvas.drawPath(leafPath, paint);
 
     final Paint veinPaint = Paint()
-      ..color = const Color(0x734CAF50)
+      ..color = const Color(0x73075B49)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true;

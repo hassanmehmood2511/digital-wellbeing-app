@@ -75,9 +75,12 @@ class HabitCard extends StatelessWidget {
 
                     Row(
                       children: [
-                        Text(
-                          '${habit.completedCount}/${habit.targetCount} today',
-                          style: AppTextStyles.label,
+                        Flexible(
+                          child: Text(
+                            '${habit.completedCount}/${habit.targetCount} today',
+                            style: AppTextStyles.label,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
 
                         const SizedBox(width: AppSpacing.sm),

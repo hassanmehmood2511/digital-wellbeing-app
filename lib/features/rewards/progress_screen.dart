@@ -200,12 +200,15 @@ class _PointsHero extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Lifetime points earned',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: BehtarColors.textSecondary,
+              Expanded(
+                child: Text(
+                  'Lifetime points earned',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: BehtarColors.textSecondary,
+                  ),
                 ),
               ),
+              const SizedBox(width: BehtarSpacing.sm),
               Text(
                 '$lifetimeEarned',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(

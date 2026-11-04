@@ -21,7 +21,7 @@ class AuthBackgroundPainter extends CustomPainter {
       )
       ..close();
 
-    paint.color = const Color(0xFFE8F5E9);
+    paint.color = const Color(0xFFD0FAE4);
     canvas.drawPath(topPath, paint);
   }
 
