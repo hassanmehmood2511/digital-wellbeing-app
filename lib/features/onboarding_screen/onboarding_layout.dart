@@ -5,15 +5,15 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Colors shared by all onboarding screens.
 class OnboardingColors {
-  static const Color primaryGreen = Color(0xFF2E7D32);
-  static const Color secondaryGreen = Color(0xFF4CAF50);
-  static const Color lightGreen = Color(0xFF81C784);
-  static const Color sageGreen = Color(0xFFA5D6A7);
-  static const Color mint = Color(0xFFE8F5E9);
-  static const Color background = Color(0xFFF5FAF5);
-  static const Color primaryText = Color(0xFF1B4332);
-  static const Color secondaryText = Color(0xFF5C6B63);
-  static const Color borderColor = Color(0xFFDDE8DD);
+  static const Color primaryGreen = Color(0xFF10B982);
+  static const Color secondaryGreen = Color(0xFF075B49);
+  static const Color lightGreen = Color(0xFF10B982);
+  static const Color sageGreen = Color(0xFF667873);
+  static const Color mint = Color(0xFFD0FAE4);
+  static const Color background = Color(0xFFF4F8F7);
+  static const Color primaryText = Color(0xFF172B27);
+  static const Color secondaryText = Color(0xFF667873);
+  static const Color borderColor = Color(0xFFDCE8E3);
 }
 
 /// Smooth fade + slide transition between onboarding pages.
@@ -503,7 +503,7 @@ class _OnboardingBackgroundPainter extends CustomPainter {
       )
       ..close();
 
-    paint.color = const Color(0xFFE8F5E9);
+    paint.color = const Color(0xFFD0FAE4);
     canvas.drawPath(topPath, paint);
 
     // // Bottom wave.

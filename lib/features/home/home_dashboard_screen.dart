@@ -207,19 +207,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               ),
               children: [
                 // Slightly narrower, centered header/greeting band; the cards
-                // below keep the list's original full-width padding.
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: BehtarSpacing.sm,
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(context),
-                      const SizedBox(height: BehtarSpacing.sm),
-                      _buildGreeting(context),
-                      // Equal space above and below centers the greeting
-                      // group vertically within the header/greeting section.
-                      const SizedBox(height: BehtarSpacing.sm),
+                      const SizedBox(height: BehtarSpacing.base),
                     ],
                   ),
                 ),
@@ -240,120 +236,119 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
     final fullName = widget.controller?.fullName.trim() ?? '';
-    final initials = _initials(fullName);
+    final displayName = fullName.isNotEmpty ? fullName : 'Hassan';
+    final initials = _initials(displayName);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: () => _openTab(_tabProfile),
-          child: CircleAvatar(
-            radius: 22,
-            backgroundColor: BehtarColors.primary,
-            child: initials.isEmpty
-                ? const Icon(
-                    Icons.person_rounded,
-                    color: BehtarColors.surface,
-                    size: 24,
-                  )
-                : Text(
-                    initials,
-                    style: const TextStyle(
-                      color: BehtarColors.surface,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _greetingForTime(),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: BehtarColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
                     ),
                   ),
+                  const SizedBox(height: 2),
+                  Text(
+                    displayName,
+                    style: theme.textTheme.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: BehtarColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: BehtarSpacing.sm),
+            IconButton(
+              tooltip: 'Notifications',
+              onPressed: () {},
+              icon: const Icon(Icons.notifications_none_rounded),
+            ),
+            if (_kScenarioPreviewEnabled)
+              PopupMenuButton<DashboardScenario>(
+                tooltip: 'Preview dashboard states',
+                icon: const Icon(Icons.tune_rounded),
+                onSelected: _selectScenario,
+                itemBuilder: (context) => const [
+                  PopupMenuItem<DashboardScenario>(
+                    value: DashboardScenario.firstUse,
+                    child: Text('First use'),
+                  ),
+                  PopupMenuItem<DashboardScenario>(
+                    value: DashboardScenario.completedDay,
+                    child: Text('Completed day'),
+                  ),
+                  PopupMenuItem<DashboardScenario>(
+                    value: DashboardScenario.empty,
+                    child: Text('Empty'),
+                  ),
+                  PopupMenuItem<DashboardScenario>(
+                    value: DashboardScenario.loading,
+                    child: Text('Loading'),
+                  ),
+                  PopupMenuItem<DashboardScenario>(
+                    value: DashboardScenario.error,
+                    child: Text('Error'),
+                  ),
+                ],
+              ),
+            GestureDetector(
+              onTap: () => _openTab(_tabProfile),
+              child: CircleAvatar(
+                radius: 22,
+                backgroundColor: BehtarColors.primary,
+                child: initials.isEmpty
+                    ? const Icon(
+                        Icons.person_rounded,
+                        color: BehtarColors.surface,
+                        size: 24,
+                      )
+                    : Text(
+                        initials,
+                        style: const TextStyle(
+                          color: BehtarColors.surface,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: BehtarSpacing.sm),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: BehtarSpacing.md,
+            vertical: BehtarSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: BehtarColors.mint,
+            borderRadius: BorderRadius.circular(BehtarRadii.pill),
+          ),
+          child: Text(
+            'Small Steps, Big Changes',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: BehtarColors.primary,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
           ),
         ),
-        const Spacer(),
-        IconButton(
-          tooltip: 'Notifications',
-          onPressed: () {},
-          icon: const Icon(Icons.notifications_none_rounded),
-        ),
-        if (_kScenarioPreviewEnabled)
-          PopupMenuButton<DashboardScenario>(
-            tooltip: 'Preview dashboard states',
-            icon: const Icon(Icons.tune_rounded),
-            onSelected: _selectScenario,
-            itemBuilder: (context) => const [
-              PopupMenuItem<DashboardScenario>(
-                value: DashboardScenario.firstUse,
-                child: Text('First use'),
-              ),
-              PopupMenuItem<DashboardScenario>(
-                value: DashboardScenario.completedDay,
-                child: Text('Completed day'),
-              ),
-              PopupMenuItem<DashboardScenario>(
-                value: DashboardScenario.empty,
-                child: Text('Empty'),
-              ),
-              PopupMenuItem<DashboardScenario>(
-                value: DashboardScenario.loading,
-                child: Text('Loading'),
-              ),
-              PopupMenuItem<DashboardScenario>(
-                value: DashboardScenario.error,
-                child: Text('Error'),
-              ),
-            ],
-          ),
       ],
-    );
-  }
-
-  Widget _buildGreeting(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            '${_greetingForTime()},',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: BehtarColors.textSecondary,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: BehtarSpacing.xs),
-          Text(
-            '${_firstName()}! 👋',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: BehtarColors.textPrimary,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: BehtarSpacing.sm),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: BehtarSpacing.md,
-              vertical: BehtarSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: BehtarColors.mint,
-              borderRadius: BorderRadius.circular(BehtarRadii.pill),
-            ),
-            child: Text(
-              'Small steps. Big changes.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: BehtarColors.primary,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -720,8 +715,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
   String _greetingForTime() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 21) return 'Good evening';
+    return 'Good night';
   }
 }

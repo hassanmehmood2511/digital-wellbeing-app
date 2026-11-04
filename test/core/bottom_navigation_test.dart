@@ -23,7 +23,7 @@ void main() {
 
     await tester.tap(find.text('Habits'));
     await tester.pumpAndSettle();
-    expect(find.text('Your habits will appear here.'), findsOneWidget);
+    expect(find.text('My Habits'), findsOneWidget);
 
     await tester.tap(find.text('Challenges'));
     await tester.pumpAndSettle();
@@ -111,7 +111,7 @@ void main() {
 
     await tester.tap(find.text('Progress'));
     await tester.pumpAndSettle();
-    expect(find.text('Your progress will be shown here.'), findsOneWidget);
+    expect(find.text('Your progress'), findsOneWidget);
 
     await tester.tap(find.text('Apps'));
     await tester.pumpAndSettle();

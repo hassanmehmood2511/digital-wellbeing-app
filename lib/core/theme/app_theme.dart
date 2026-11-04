@@ -6,45 +6,38 @@ export 'app_colors.dart';
 
 
 abstract final class BehtarColors {
-  static const splashBackground = Color(0xFFF5FAF5);
-  static const splashPrimary = Color(0xFF2E7D32);
-  static const splashSecondary = Color(0xFF4CAF50);
-  static const splashLight = Color(0xFF81C784);
-  static const splashSage = Color(0xFFA5D6A7);
-  static const splashMint = Color(0xFFE8F5E9);
+  static const splashBackground = Color(0xFFF4F8F7);
+  static const splashPrimary = Color(0xFF10B982);
+  static const splashSecondary = Color(0xFF075B49);
+  static const splashLight = Color(0xFF10B982);
+  static const splashSage = Color(0xFF667873);
+  static const splashMint = Color(0xFFD0FAE4);
   static const splashSurface = Color(0xFFFFFFFF);
-  static const splashText = Color(0xFF1B4332);
-  static const splashSecondaryText = Color(0xFF5C6B63);
-  static const splashBorder = Color(0xFFDDE8DD);
+  static const splashText = Color(0xFF172B27);
+  static const splashSecondaryText = Color(0xFF667873);
+  static const splashBorder = Color(0xFFDCE8E3);
 
-  static const background = Color(0xFFFAFAF7);
+  static const background = Color(0xFFF4F8F7);
   // Primary Green Palette
-  static const Color primary = Color(0xFF2E7D32);
-  static const Color secondary = Color(0xFF4CAF50);
-  static const Color lightGreen = Color(0xFF81C784);
-  static const Color sage = Color(0xFFA5D6A7);
-  static const Color mint = Color(0xFFE8F5E9);
+  static const Color primary = Color(0xFF10B982);
+  static const Color secondary = Color(0xFF075B49);
+  static const Color lightGreen = Color(0xFF10B982);
+  static const Color sage = Color(0xFF667873);
+  static const Color mint = Color(0xFFD0FAE4);
 
   // Backgrounds & Surfaces
   static const Color white = Color(0xFFFFFFFF);
 
   // Text Colors
-  static const Color textPrimary = Color(0xFF1B4332);
-  static const Color textSecondary = Color(0xFF5C6B63);
+  static const Color textPrimary = Color(0xFF172B27);
+  static const Color textSecondary = Color(0xFF667873);
 
   // Borders & Dividers
-  static const Color border = Color(0xFFDDE8DD);
+  static const Color border = Color(0xFFDCE8E3);
 
-  // static const primary = Color(0xFF2E7D32);
-  // static const secondary = Color(0xFF4CAF50);
-  // static const lightGreen = Color(0xFF81C784);
-  // static const sage = Color(0xFFA5D6A7);
-  // static const mint = Color(0xFFE8F5E9);
-  // static const background = Color(0xFFF5FAF5);
   static const surface = Color(0xFFFFFFFF);
-  static const primaryText = Color(0xFF1B4332);
-  static const secondaryText = Color(0xFF5C6B63);
-  // static const border = Color(0xFFDDE8DD);
+  static const primaryText = Color(0xFF172B27);
+  static const secondaryText = Color(0xFF667873);
 }
 
 abstract final class BehtarSpacing {

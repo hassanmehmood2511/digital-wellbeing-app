@@ -23,14 +23,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  static const Color primaryGreen = Color(0xFF2E7D32);
-  static const Color secondaryGreen = Color(0xFF4CAF50);
-  static const Color sageGreen = Color(0xFFA5D6A7);
-  static const Color background = Color(0xFFF5FAF5);
-  static const Color primaryText = Color(0xFF1B4332);
-  static const Color secondaryText = Color(0xFF5C6B63);
-  static const Color borderColor = Color(0xFFDDE8DD);
-  static const Color logoGreen = Color(0xFF317E3D);
+  static const Color primaryGreen = Color(0xFF10B982);
+  static const Color secondaryGreen = Color(0xFF075B49);
+  static const Color sageGreen = Color(0xFF667873);
+  static const Color background = Color(0xFFF4F8F7);
+  static const Color primaryText = Color(0xFF172B27);
+  static const Color secondaryText = Color(0xFF667873);
+  static const Color borderColor = Color(0xFFDCE8E3);
+  static const Color logoGreen = Color(0xFF075B49);
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
