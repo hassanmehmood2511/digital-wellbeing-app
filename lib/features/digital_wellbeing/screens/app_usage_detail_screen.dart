@@ -67,7 +67,11 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                     strokeWidth: 20,
                     backgroundColor: AppColors.border,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isOverLimit ? AppColors.primary : AppColors.secondary,
+                      percentage >= 1.0
+                          ? AppColors.error
+                          : (percentage >= 0.8
+                              ? AppColors.warning
+                              : AppColors.secondary),
                     ),
                   ),
                 ),

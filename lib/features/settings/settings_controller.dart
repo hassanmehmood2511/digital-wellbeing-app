@@ -12,6 +12,12 @@ class SettingsController extends ChangeNotifier {
   bool habitRemindersEnabled = true;
   bool dailyCheckInEnabled = true;
   bool wellbeingTipsEnabled = false;
+  bool gentleRemindersEnabled = true;
+
+  void updateGentleReminders(bool enabled) {
+    gentleRemindersEnabled = enabled;
+    notifyListeners();
+  }
 
   void updateProfile({required String fullName, required String phone}) {
     this.fullName = fullName;

@@ -16,7 +16,6 @@ class UsageOverviewScreen extends StatefulWidget {
 
 class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
   bool _showBreakReminder = true;
-  bool _gentleRemindersEnabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +35,6 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         title: const Text('Screen Time'),
         backgroundColor: AppColors.background,
         elevation: 0,
-        // Settings icon removed from here as requested
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
@@ -45,15 +43,8 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
           children: [
             _buildSuccessCard(),
             const SizedBox(height: 24),
-
-            // ✅ CORRECT: We just CALL the function here, we don't define it
             _buildLiveUsageBar(totalUsage, totalLimit, overallPercentage),
             const SizedBox(height: 24),
-
-            // Gentle Reminders Toggle (Quick Access)
-            _buildGentleRemindersCard(),
-            const SizedBox(height: 24),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -79,7 +70,6 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               ],
             ),
             const SizedBox(height: 12),
-
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -105,14 +95,20 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     );
   }
 
-  // ✅ FUNCTION DEFINITION: This belongs OUTSIDE the build method
   Widget _buildLiveUsageBar(int totalUsage, int totalLimit, double percentage) {
+    final Color barColor = percentage >= 1.0
+        ? AppColors.error
+        : (percentage >= 0.8 ? AppColors.warning : AppColors.secondary);
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(
+          color: percentage >= 1.0 ? AppColors.error.withValues(alpha: 0.3) : AppColors.border,
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +117,6 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                // ✅ FIX: Prevents yellow/black overflow box on mobile
                 child: Text(
                   'Today\'s Total Usage',
                   style: AppTypography.h3.copyWith(fontSize: 18),
@@ -130,15 +125,12 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               ),
               const SizedBox(width: 8),
               Flexible(
-                // ✅ FIX: Prevents yellow/black overflow box on mobile
                 child: Text(
                   '${_formatMinutes(totalUsage)} / ${_formatMinutes(totalLimit)}',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: percentage >= 1.0
-                        ? AppColors.primary
-                        : AppColors.secondary,
+                    color: barColor,
                   ),
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
@@ -152,9 +144,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
             child: LinearProgressIndicator(
               value: percentage.clamp(0.0, 1.0),
               backgroundColor: AppColors.border,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                percentage >= 1.0 ? AppColors.primary : AppColors.secondary,
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
               minHeight: 12,
             ),
           ),
@@ -162,75 +152,17 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
           Text(
             percentage >= 1.0
                 ? '⚠️ You\'ve exceeded your total daily limit!'
-                : '${(percentage * 100).toStringAsFixed(0)}% of daily limit used',
+                : (percentage >= 0.8
+                    ? '⚠️ You are approaching your total daily limit (${(percentage * 100).toStringAsFixed(0)}%)'
+                    : '${(percentage * 100).toStringAsFixed(0)}% of daily limit used'),
             style: AppTypography.small.copyWith(
               color: percentage >= 1.0
-                  ? AppColors.primary
-                  : AppColors.textSecondary,
+                  ? AppColors.error
+                  : (percentage >= 0.8
+                      ? AppColors.warning
+                      : AppColors.textSecondary),
+              fontWeight: percentage >= 0.8 ? FontWeight.w600 : FontWeight.w400,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGentleRemindersCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.mint,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.notifications_active_outlined,
-              color: AppColors.primary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Gentle Reminders',
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Get notified at 80% of your limit',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: _gentleRemindersEnabled,
-            activeThumbColor: AppColors.primary,
-            activeTrackColor: AppColors.sage,
-            inactiveThumbColor: AppColors.sage,
-            inactiveTrackColor: AppColors.border,
-            onChanged: (bool value) {
-              setState(() {
-                _gentleRemindersEnabled = value;
-              });
-            },
           ),
         ],
       ),
@@ -238,9 +170,9 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
   }
 
   Widget _buildSuccessCard() {
-    final apps = AppData().apps;
+    final apps = AppData().apps.where((app) => app.isTracked).toList();
     final overLimitApps = apps
-        .where((app) => app.usageMinutes > app.dailyLimitMinutes)
+        .where((app) => app.usageMinutes >= app.dailyLimitMinutes)
         .toList();
     final isAnyOverLimit = overLimitApps.isNotEmpty;
 
@@ -255,7 +187,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         children: [
           Icon(
             isAnyOverLimit ? Icons.warning_rounded : Icons.check_circle_outline,
-            color: isAnyOverLimit ? AppColors.primary : AppColors.secondary,
+            color: isAnyOverLimit ? AppColors.error : AppColors.secondary,
             size: 32,
           ),
           const SizedBox(width: 16),
@@ -287,7 +219,11 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     required int usageMinutes,
     required int limitMinutes,
   }) {
-    final percentage = (usageMinutes / limitMinutes).clamp(0.0, 1.5);
+    final percentage = limitMinutes > 0 ? (usageMinutes / limitMinutes) : 0.0;
+    final Color indicatorColor = percentage >= 1.0
+        ? AppColors.error
+        : (percentage >= 0.8 ? AppColors.warning : AppColors.secondary);
+
     final appData = AppUsage(
       appName: appName,
       usageMinutes: usageMinutes,
@@ -301,7 +237,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
           MaterialPageRoute(
             builder: (context) => AppUsageDetailScreen(appData: appData),
           ),
-        );
+        ).then((_) => setState(() {}));
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -309,7 +245,12 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.border, width: 1),
+          border: Border.all(
+            color: percentage >= 1.0
+                ? AppColors.error.withValues(alpha: 0.3)
+                : AppColors.border,
+            width: 1,
+          ),
         ),
         child: Row(
           children: [
@@ -317,22 +258,74 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.mint,
+                color: percentage >= 1.0
+                    ? AppColors.error.withValues(alpha: 0.1)
+                    : (percentage >= 0.8
+                        ? AppColors.warning.withValues(alpha: 0.1)
+                        : AppColors.mint),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Center(child: _getAppIcon(appName)),
+              child: Center(
+                child: _getAppIcon(
+                  appName,
+                  iconColor: percentage >= 1.0
+                      ? AppColors.error
+                      : (percentage >= 0.8
+                          ? AppColors.warning
+                          : AppColors.primary),
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    appName,
-                    style: AppTypography.body.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        appName,
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (percentage >= 1.0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Exceeded',
+                            style: AppTypography.small.copyWith(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        )
+                      else if (percentage >= 0.8)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Near Limit',
+                            style: AppTypography.small.copyWith(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.warning,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   ClipRRect(
@@ -340,22 +333,27 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                     child: LinearProgressIndicator(
                       value: percentage.clamp(0.0, 1.0),
                       backgroundColor: AppColors.border,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        percentage >= 1.0
-                            ? AppColors.primary
-                            : AppColors.secondary,
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(indicatorColor),
                       minHeight: 6,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${_formatMinutes(usageMinutes)} / ${_formatMinutes(limitMinutes)}',
-                    style: AppTypography.small,
+                    style: AppTypography.small.copyWith(
+                      color: percentage >= 1.0
+                          ? AppColors.error
+                          : (percentage >= 0.8
+                              ? AppColors.warning
+                              : AppColors.textSecondary),
+                      fontWeight:
+                          percentage >= 0.8 ? FontWeight.w600 : FontWeight.w400,
+                    ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             const Icon(Icons.chevron_right, color: AppColors.sage, size: 20),
           ],
         ),
@@ -363,7 +361,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     );
   }
 
-  Widget _getAppIcon(String appName) {
+  Widget _getAppIcon(String appName, {Color iconColor = AppColors.primary}) {
     final FaIconData iconData;
 
     switch (appName.toLowerCase()) {
@@ -394,7 +392,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         iconData = FontAwesomeIcons.mobileScreen;
     }
 
-    return FaIcon(iconData, color: AppColors.primary, size: 22);
+    return FaIcon(iconData, color: iconColor, size: 22);
   }
 
   Widget _buildDailyUsageChart() {

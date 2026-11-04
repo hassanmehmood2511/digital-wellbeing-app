@@ -40,6 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
     _progressController.addStatusListener((status) {
       if (status == AnimationStatus.completed && !_finished && mounted) {
         _finished = true;
+        _blinkController.stop();
         widget.onFinished();
       }
     });

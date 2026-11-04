@@ -246,28 +246,28 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // The logo PNG carries wide transparent padding; clip to its central
-        // mark so the icon and wordmark read as one cohesive brand lockup.
-        ClipRect(
-          child: Align(
-            alignment: Alignment.center,
-            widthFactor: 0.30,
-            heightFactor: 0.45,
-            child: Image.asset(
-              'assets/images/Behtar-Logo.png',
-              height: 96,
-              fit: BoxFit.contain,
-            ),
+        GestureDetector(
+          onTap: () => _openTab(_tabProfile),
+          child: CircleAvatar(
+            radius: 22,
+            backgroundColor: BehtarColors.primary,
+            child: initials.isEmpty
+                ? const Icon(
+                    Icons.person_rounded,
+                    color: BehtarColors.surface,
+                    size: 24,
+                  )
+                : Text(
+                    initials,
+                    style: const TextStyle(
+                      color: BehtarColors.surface,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
           ),
         ),
-        const SizedBox(width: BehtarSpacing.xs),
-        Expanded(
-          child: Text(
-            'Behtar',
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-        ),
+        const Spacer(),
         IconButton(
           tooltip: 'Notifications',
           onPressed: () {},
@@ -301,27 +301,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               ),
             ],
           ),
-        const SizedBox(width: BehtarSpacing.xs),
-        GestureDetector(
-          onTap: () => _openTab(_tabProfile),
-          child: CircleAvatar(
-            radius: 20,
-            backgroundColor: BehtarColors.primary,
-            child: initials.isEmpty
-                ? const Icon(
-                    Icons.person_rounded,
-                    color: BehtarColors.surface,
-                    size: 22,
-                  )
-                : Text(
-                    initials,
-                    style: const TextStyle(
-                      color: BehtarColors.surface,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-          ),
-        ),
       ],
     );
   }
@@ -331,24 +310,47 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
     return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             '${_greetingForTime()},',
-            textAlign: TextAlign.start,
-            style: theme.textTheme.titleMedium,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: BehtarColors.textSecondary,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.2,
+            ),
           ),
           const SizedBox(height: BehtarSpacing.xs),
           Text(
             '${_firstName()}! 👋',
-            textAlign: TextAlign.start,
-            style: theme.textTheme.headlineLarge,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: BehtarColors.textPrimary,
+              letterSpacing: -0.5,
+            ),
           ),
-          const SizedBox(height: BehtarSpacing.xs),
-          Text(
-            'Small steps. Big changes.',
-            textAlign: TextAlign.start,
-            style: theme.textTheme.bodyMedium,
+          const SizedBox(height: BehtarSpacing.sm),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: BehtarSpacing.md,
+              vertical: BehtarSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: BehtarColors.mint,
+              borderRadius: BorderRadius.circular(BehtarRadii.pill),
+            ),
+            child: Text(
+              'Small steps. Big changes.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: BehtarColors.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
           ),
         ],
       ),
@@ -432,7 +434,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _dayCompleted ? 'All Done Today!' : 'Habits Completed',
+                      _dayCompleted ? 'All Done Today!' : 'Today’s Habits',
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: BehtarSpacing.xs),
@@ -646,7 +648,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             ),
             DashboardQuickActionTile(
               icon: Icons.phone_android_rounded,
-              label: 'View Screen Time',
+              label: 'App Usage',
               onTap: () => _openTab(_tabApps),
             ),
             DashboardQuickActionTile(
