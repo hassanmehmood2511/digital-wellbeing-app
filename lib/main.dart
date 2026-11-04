@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routing/app_navigation_shell.dart';
 import 'features/rewards/rewards_store.dart';
@@ -13,7 +14,16 @@ import 'features/splashscreen/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: 'https://rubhqtlgalqkaiuojrtc.supabase.co',
+    publishableKey: 'sb_publishable_f5ziYES32nYpRrJ6_ORT8g_Crj0-Zow',
+  );
+
+  // Initialize local rewards storage
   await PointsStore.instance.initialize();
+
   runApp(const BehtarApp());
 }
 
@@ -27,16 +37,14 @@ class BehtarApp extends StatefulWidget {
 }
 
 class _BehtarAppState extends State<BehtarApp> {
-  // Saved on the device once the user has finished (or skipped) onboarding.
   static const String _onboardingKey = 'onboarding_completed';
 
-  // Set to true while testing, so onboarding shows after every login.
-  // Set back to false before release.
   static const bool _alwaysShowOnboarding = false;
 
   late final SettingsController _settingsController;
 
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _navigatorKey =
+      GlobalKey<NavigatorState>();
 
   bool _hasStartedLogin = false;
   bool _isOpeningAuthRoute = false;
@@ -62,12 +70,14 @@ class _BehtarAppState extends State<BehtarApp> {
     _navigatorKey.currentState?.pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            LoginScreen(
           onLogin: _afterAuthentication,
           onForgotPassword: _openForgotPassword,
           onSignUp: _openSignUp,
         ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
@@ -76,7 +86,10 @@ class _BehtarAppState extends State<BehtarApp> {
 
   void _openSignUp() {
     _openAuthRoute(
-      SignUpScreen(onSignUp: _completeMockSignUp, onLogin: _backToLogin),
+      SignUpScreen(
+        onSignUp: _completeMockSignUp,
+        onLogin: _backToLogin,
+      ),
     );
   }
 
@@ -90,39 +103,47 @@ class _BehtarAppState extends State<BehtarApp> {
   }
 
   void _openForgotPassword() {
-    _openAuthRoute(ForgotPasswordScreen(onBackToLogin: _backToLogin));
+    _openAuthRoute(
+      ForgotPasswordScreen(onBackToLogin: _backToLogin),
+    );
   }
 
   void _openAuthRoute(Widget screen) {
     if (_isOpeningAuthRoute || _hasEnteredDashboard) return;
+
     final navigator = _navigatorKey.currentState;
     if (navigator == null) return;
 
     _isOpeningAuthRoute = true;
+
     navigator
-        .push<void>(MaterialPageRoute<void>(builder: (_) => screen))
+        .push<void>(
+          MaterialPageRoute<void>(
+            builder: (_) => screen,
+          ),
+        )
         .whenComplete(() => _isOpeningAuthRoute = false);
   }
 
   void _backToLogin() {
     final navigator = _navigatorKey.currentState;
+
     if (navigator?.canPop() ?? false) {
       navigator!.pop();
     }
   }
 
-  // Called after a successful login or sign up.
-  // First-time users see onboarding, everyone else goes to the dashboard.
   Future<void> _afterAuthentication() async {
     if (_hasEnteredDashboard || _isCheckingOnboarding) return;
+
     _isCheckingOnboarding = true;
 
     bool alreadySeen = false;
+
     try {
       final prefs = await SharedPreferences.getInstance();
       alreadySeen = prefs.getBool(_onboardingKey) ?? false;
     } catch (_) {
-      // If storage fails, skip onboarding instead of blocking the user.
       alreadySeen = true;
     }
 
@@ -139,13 +160,15 @@ class _BehtarAppState extends State<BehtarApp> {
     final navigator = _navigatorKey.currentState;
     if (navigator == null) return;
 
-    // Clears login / sign up from the back stack.
     navigator.pushAndRemoveUntil<void>(
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) =>
-            OnboardingScreenOne(onFinished: _finishOnboarding),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            OnboardingScreenOne(
+          onFinished: _finishOnboarding,
+        ),
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
@@ -153,7 +176,6 @@ class _BehtarAppState extends State<BehtarApp> {
     );
   }
 
-  // Called by Skip or Get Started on the onboarding screens.
   Future<void> _finishOnboarding() async {
     if (_hasEnteredDashboard) return;
 
@@ -161,7 +183,7 @@ class _BehtarAppState extends State<BehtarApp> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_onboardingKey, true);
     } catch (_) {
-      // Not critical: onboarding may simply show again next time.
+      // Onboarding can show again if local storage fails.
     }
 
     _openDashboard();
@@ -169,17 +191,21 @@ class _BehtarAppState extends State<BehtarApp> {
 
   void _openDashboard() {
     if (_hasEnteredDashboard) return;
+
     final navigator = _navigatorKey.currentState;
     if (navigator == null) return;
 
     _hasEnteredDashboard = true;
-    // Temporary mock auth: replace this callback with backend authentication.
+
     navigator.pushAndRemoveUntil<void>(
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) =>
-            AppNavigationShell(settingsController: _settingsController),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            AppNavigationShell(
+          settingsController: _settingsController,
+        ),
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
@@ -194,7 +220,10 @@ class _BehtarAppState extends State<BehtarApp> {
       title: 'Behtar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: widget.home ?? AppNavigationShell(settingsController: _settingsController),
+      home: widget.home ??
+          AppNavigationShell(
+            settingsController: _settingsController,
+          ),
     );
   }
 }
