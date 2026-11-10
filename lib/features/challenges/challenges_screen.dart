@@ -6,7 +6,6 @@ import '../../features/settings/settings_widgets.dart';
 import '../rewards/reward_completion_service.dart';
 import 'challenge.dart';
 import 'challenges_controller.dart';
-import 'utils/challenge_date_utils.dart';
 import 'widgets/challenge_widgets.dart';
 
 class ChallengesScreen extends StatefulWidget {
@@ -173,7 +172,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
   @override
   void initState() {
     super.initState();
-    _startsOn = challengeDateOnly(DateTime.now());
+    _startsOn = dateOnly(DateTime.now());
     _startDateController = TextEditingController(text: formatDate(_startsOn));
   }
 
@@ -324,7 +323,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
                     suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                   validator: (_) {
-                    if (_startsOn.isBefore(challengeDateOnly(DateTime.now()))) {
+                    if (_startsOn.isBefore(dateOnly(DateTime.now()))) {
                       return 'Choose today or a future date.';
                     }
                     return null;
@@ -453,7 +452,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
       : _selectedGoal!;
 
   Future<void> _selectStartDate() async {
-    final today = challengeDateOnly(DateTime.now());
+    final today = dateOnly(DateTime.now());
     final picked = await showDatePicker(
       context: context,
       initialDate: _startsOn.isBefore(today) ? today : _startsOn,
@@ -463,7 +462,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
     );
     if (picked == null || !mounted) return;
     setState(() {
-      _startsOn = challengeDateOnly(picked);
+      _startsOn = dateOnly(picked);
       _startDateController.text = formatDate(_startsOn);
       _showPreview = false;
       _saveError = null;
@@ -556,7 +555,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
                           challenge.dailyProgress[day] < 1 &&
                           !challenge.startsOn
                               .add(Duration(days: day))
-                              .isAfter(challengeDateOnly(DateTime.now())),
+                              .isAfter(dateOnly(DateTime.now())),
                       onPressed: () => _logProgress(context, challenge, day),
                     ),
                     if (day < 6)
@@ -669,7 +668,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
         ),
         title: const Text('Leave this challenge?'),
         content: const Text(
-          'Your progress will be saved on this device if you decide to join '
+          'Your progress is saved to your account if you decide to join '
           'again later.',
         ),
         actions: [
@@ -702,7 +701,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
         current.dailyProgress[day] >= 1 ||
         current.startsOn
             .add(Duration(days: day))
-            .isAfter(challengeDateOnly(DateTime.now()))) {
+            .isAfter(dateOnly(DateTime.now()))) {
       return;
     }
     controller.addDailyProgress(current.id, day);

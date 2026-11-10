@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'package:digital_wellbeing_app/features/digital_wellbeing/data/app_data.dart';
 import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usage.dart';
 import 'app_usage_detail_screen.dart';
-import 'tracked_apps_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:digital_wellbeing_app/core/widgets/behtar_progress_bar.dart';
+import 'package:digital_wellbeing_app/features/digital_wellbeing/data/device_usage_service.dart';
+import 'permission_screen.dart';
+import '../widgets/usage_access_sheet.dart';
+import 'settings_menu_screen.dart';
+import 'package:digital_wellbeing_app/core/utils/date_formatters.dart';
 
 class UsageOverviewScreen extends StatefulWidget {
   const UsageOverviewScreen({super.key});
@@ -15,8 +20,91 @@ class UsageOverviewScreen extends StatefulWidget {
   State<UsageOverviewScreen> createState() => _UsageOverviewScreenState();
 }
 
-class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
+class _UsageOverviewScreenState extends State<UsageOverviewScreen>
+    with WidgetsBindingObserver {
   bool _showBreakReminder = true;
+
+  /// True after we sent the user to Android settings, so we can confirm
+  /// when they come back with access turned on.
+  bool _waitingForPermission = false;
+
+  /// Summary cards the user closed today ("well" / "over").
+  final Set<String> _hiddenSummaries = {};
+
+  String get _todayKey {
+    final now = DateTime.now();
+    return '${now.year}-${now.month}-${now.day}';
+  }
+
+  Future<void> _loadHiddenSummaries() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hidden = prefs.getStringList('usage_summary_hidden_$_todayKey');
+      if (hidden != null && mounted) {
+        setState(() => _hiddenSummaries.addAll(hidden));
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _hideSummary(String variant) async {
+    setState(() => _hiddenSummaries.add(variant));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(
+        'usage_summary_hidden_$_todayKey',
+        _hiddenSummaries.toList(),
+      );
+    } catch (_) {}
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    AppData().addListener(_onDataChanged);
+    _loadHiddenSummaries();
+    if (!AppData().hasLoaded && !AppData().isLoading) {
+      AppData().load();
+    } else {
+      AppData().syncFromDevice();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    AppData().removeListener(_onDataChanged);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    // Back from Settings (or from another app): refresh real usage.
+    AppData().syncFromDevice().then((synced) {
+      if (!mounted || !_waitingForPermission) return;
+      _waitingForPermission = false;
+      if (synced) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Screen time tracking is on. Your usage is up to date.'),
+          ),
+        );
+      }
+    });
+  }
+
+  void _onDataChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _requestUsageAccess() async {
+    final allow = await showUsageAccessSheet(context);
+    if (!allow) return;
+    _waitingForPermission = true;
+    await DeviceUsageService.openSettings();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -36,40 +124,32 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
         title: const Text('Screen Time'),
         backgroundColor: AppColors.background,
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Screen time settings',
+            icon: const Icon(Icons.tune_rounded),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SettingsMenuScreen(),
+              ),
+            ),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () => AppData().syncFromDevice(),
+        child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSuccessCard(),
-            const SizedBox(height: 24),
+            ..._buildTrackingStatus(),
+            ..._buildSummaryCard(),
             _buildLiveUsageBar(totalUsage, totalLimit, overallPercentage),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(child: Text('Selected Apps', style: AppTypography.h3)),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TrackedAppsScreen(),
-                      ),
-                    ).then((_) => setState(() {}));
-                  },
-                  child: Text(
-                    'Manage',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            Text('Selected Apps', style: AppTypography.h3),
             const SizedBox(height: 12),
             ListView.builder(
               shrinkWrap: true,
@@ -92,6 +172,125 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
             if (_showBreakReminder) _buildBreakReminder(),
           ],
         ),
+        ),
+      ),
+    );
+  }
+
+  /// Banner explaining whether real screen time is being recorded.
+  List<Widget> _buildTrackingStatus() {
+    final data = AppData();
+    if (!data.trackingSupported) {
+      return [
+        _statusCard(
+          icon: Icons.phone_android_rounded,
+          title: 'Screen time is recorded on your phone',
+          message:
+              'Open Behtar on your Android phone and allow usage access. '
+              'Your usage will then appear here too.',
+        ),
+        const SizedBox(height: 16),
+      ];
+    }
+    if (data.usageAccessGranted == false) {
+      return [
+        _statusCard(
+          icon: Icons.lock_clock_rounded,
+          title: 'Turn on screen time tracking',
+          message:
+              'Allow usage access so Behtar can show how long you spend in '
+              'each app. It only reads time spent, never what you do in apps.',
+          action: FilledButton(
+            onPressed: _requestUsageAccess,
+            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Allow usage access'),
+          ),
+          secondary: TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const PermissionScreen()),
+            ),
+            child: const Text('How it works'),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ];
+    }
+    final synced = data.lastSyncedAt;
+    if (synced == null) return const [];
+    final time = TimeOfDay.fromDateTime(synced).format(context);
+    return [
+      Row(
+        children: [
+          const Icon(Icons.sync_rounded, size: 16, color: AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              'Live from this phone · updated $time · pull down to refresh',
+              style: AppTypography.small.copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+    ];
+  }
+
+  Widget _statusCard({
+    required IconData icon,
+    required String title,
+    required String message,
+    Widget? action,
+    Widget? secondary,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.mint,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTypography.h3.copyWith(fontSize: 17),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: AppTypography.body.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
+          ),
+          if (action != null) ...[
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [action, ?secondary],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -127,7 +326,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  '${_formatMinutes(totalUsage)} / ${_formatMinutes(totalLimit)}',
+                  '${formatMinutes(totalUsage)} / ${formatMinutes(totalLimit)}',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -166,21 +365,39 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     );
   }
 
-  Widget _buildSuccessCard() {
+  /// "You're doing well" / "Some apps exceeded" card. The user can close it;
+  /// it stays hidden for the rest of the day (a new over-limit warning still
+  /// appears even if the "doing well" card was closed).
+  List<Widget> _buildSummaryCard() {
     final apps = AppData().apps.where((app) => app.isTracked).toList();
     final overLimitApps = apps
-        .where((app) => app.usageMinutes >= app.dailyLimitMinutes)
+        .where(
+          (app) =>
+              app.dailyLimitMinutes > 0 &&
+              app.usageMinutes >= app.dailyLimitMinutes,
+        )
         .toList();
     final isAnyOverLimit = overLimitApps.isNotEmpty;
+    final variant = isAnyOverLimit ? 'over' : 'well';
+    if (_hiddenSummaries.contains(variant)) return const [];
 
-    return Container(
-      padding: const EdgeInsets.all(24),
+    return [
+      Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 8, 20),
       decoration: BoxDecoration(
-        color: AppColors.mint,
+        color: isAnyOverLimit
+            ? AppColors.error.withValues(alpha: 0.08)
+            : AppColors.mint,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(
+          color: isAnyOverLimit
+              ? AppColors.error.withValues(alpha: 0.25)
+              : AppColors.border,
+          width: 1,
+        ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             isAnyOverLimit ? Icons.warning_rounded : Icons.check_circle_outline,
@@ -199,16 +416,30 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                 const SizedBox(height: 4),
                 Text(
                   isAnyOverLimit
-                      ? '${overLimitApps.length} app(s) over daily limit.'
+                      ? (overLimitApps.length == 1
+                            ? '${overLimitApps.first.appName} is over its daily limit.'
+                            : '${overLimitApps.length} apps are over their daily limit.')
                       : 'Your screen time is within your daily limit.',
                   style: AppTypography.body,
                 ),
               ],
             ),
           ),
+          IconButton(
+            tooltip: 'Close',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(
+              Icons.close_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+            onPressed: () => _hideSummary(variant),
+          ),
         ],
       ),
-    );
+    ),
+      const SizedBox(height: 24),
+    ];
   }
 
   Widget _buildAppUsageItem({
@@ -332,7 +563,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_formatMinutes(usageMinutes)} / ${_formatMinutes(limitMinutes)}',
+                    '${formatMinutes(usageMinutes)} / ${formatMinutes(limitMinutes)}',
                     style: AppTypography.small.copyWith(
                       color: percentage >= 1.0
                           ? AppColors.error
@@ -389,7 +620,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
   }
 
   Widget _buildDailyUsageChart() {
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
+    final days = AppData().weeklyLabels();
     final weeklyUsageMinutes = AppData().getWeeklyUsage();
     final maxMinutes = weeklyUsageMinutes
         .reduce((a, b) => a > b ? a : b)
@@ -548,11 +779,4 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     );
   }
 
-  String _formatMinutes(int minutes) {
-    if (minutes < 60) return '${minutes}m';
-    int hours = minutes ~/ 60;
-    int remainingMinutes = minutes % 60;
-    if (remainingMinutes == 0) return '${hours}h';
-    return '${hours}h ${remainingMinutes}m';
-  }
 }

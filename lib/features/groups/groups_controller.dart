@@ -1,15 +1,22 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 
+import '../../core/backend/backend.dart';
 import 'group.dart';
 
+/// Groups and their leaderboards, backed by Supabase tables `groups` and
+/// `group_members` plus the `join_group_with_code` and
+/// `get_my_group_members` database functions.
 class GroupsController extends ChangeNotifier {
   GroupsController({DateTime Function()? clock})
-    : _clock = clock ?? DateTime.now,
-      _groups = _sampleGroups((clock ?? DateTime.now)());
+    : _clock = clock ?? DateTime.now;
 
   final DateTime Function() _clock;
-  final List<BehtarGroup> _groups;
-  int _nextId = 1;
+  final List<BehtarGroup> _groups = [];
+
+  /// Groups created on this device that a reload might not include yet.
+  final Set<String> _recentlyCreatedIds = {};
   bool _isDisposed = false;
   bool isLoading = false;
   String? loadError;
@@ -24,19 +31,78 @@ class GroupsController extends ChangeNotifier {
     super.dispose();
   }
 
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) super.notifyListeners();
+  }
+
   Future<void> load() async {
+    final client = Backend.client;
+    final userId = Backend.userId;
+    if (client == null || userId == null) return;
+
     isLoading = true;
     loadError = null;
     notifyListeners();
     try {
-      await Future<void>.delayed(const Duration(milliseconds: 200));
+      final groupRows = await client
+          .from('groups')
+          .select()
+          .order('created_at', ascending: false);
+      final memberRows = await client.rpc('get_my_group_members') as List<dynamic>;
+
+      final membersByGroup = <String, List<GroupMember>>{};
+      for (final raw in memberRows) {
+        final row = raw as Map<String, dynamic>;
+        final memberId = row['user_id'] as String;
+        membersByGroup.putIfAbsent(row['group_id'] as String, () => []).add(
+          GroupMember(
+            id: memberId,
+            name: (row['full_name'] as String?) ?? 'Behtar member',
+            points: (row['points'] as num?)?.toInt() ?? 0,
+            isCurrentUser: memberId == userId,
+          ),
+        );
+      }
+
       if (_isDisposed) return;
+      final serverIds = groupRows.map((row) => row['id'] as String).toSet();
+      final keepLocal = _groups
+          .where(
+            (g) =>
+                _recentlyCreatedIds.contains(g.id) && !serverIds.contains(g.id),
+          )
+          .toList();
+      _recentlyCreatedIds.removeAll(serverIds);
+      _groups
+        ..clear()
+        ..addAll(keepLocal)
+        ..addAll(
+          groupRows.map((row) {
+            final id = row['id'] as String;
+            final members = membersByGroup[id] ?? const <GroupMember>[];
+            return BehtarGroup(
+              id: id,
+              name: row['name'] as String,
+              description: row['description'] as String,
+              visibility: row['visibility'] == 'private'
+                  ? GroupVisibility.private
+                  : GroupVisibility.public,
+              inviteCode: row['invite_code'] as String,
+              inviteExpiresOn: DateTime.parse(row['invite_expires_on'] as String),
+              members: members,
+              isCreator: row['creator_id'] == userId,
+              isJoined: members.any((m) => m.isCurrentUser),
+            );
+          }),
+        );
       isLoading = false;
       notifyListeners();
-    } on Exception {
+    } catch (error) {
       if (_isDisposed) return;
       isLoading = false;
       loadError = 'Groups could not be loaded. Please try again.';
+      debugPrint('Groups load failed: $error');
       notifyListeners();
     }
   }
@@ -48,12 +114,14 @@ class GroupsController extends ChangeNotifier {
     return null;
   }
 
-  BehtarGroup createGroup({
+  /// Creates a group on the server (group + creator membership in one
+  /// step), then adds it to the list. Throws if the server rejects it.
+  Future<BehtarGroup> createGroup({
     required String name,
     required String description,
     required GroupVisibility visibility,
     required String creatorName,
-  }) {
+  }) async {
     final normalizedName = name.trim();
     final normalizedDescription = description.trim();
     final normalizedCreator = creatorName.trim();
@@ -65,194 +133,109 @@ class GroupsController extends ChangeNotifier {
       throw ArgumentError('Description must be 8–240 characters.');
     }
 
-    final id = 'local-group-${_nextId++}';
     final group = BehtarGroup(
-      id: id,
+      id: newUuid(),
       name: normalizedName,
       description: normalizedDescription,
       visibility: visibility,
-      inviteCode: 'BETHTR${(1000 + _nextId).toString()}',
-      inviteExpiresOn: _dateOnly(_clock()).add(const Duration(days: 30)),
+      inviteCode: _generateInviteCode(),
+      inviteExpiresOn: dateOnly(_clock()).add(const Duration(days: 30)),
       members: [
         GroupMember(
-          id: 'current-user',
+          id: Backend.userId ?? 'current-user',
           name: normalizedCreator.isEmpty ? 'You' : normalizedCreator,
-          points: 0,
+          points: _myPoints(),
           isCurrentUser: true,
         ),
       ],
       isCreator: true,
       isJoined: true,
     );
+
+    final client = Backend.client;
+    if (client != null && Backend.userId != null) {
+      await client.rpc(
+        'create_group',
+        params: {
+          'p_id': group.id,
+          'p_name': group.name,
+          'p_description': group.description,
+          'p_visibility': group.visibility.name,
+          'p_invite_code': group.inviteCode,
+        },
+      );
+    }
+
+    _recentlyCreatedIds.add(group.id);
+    _groups.removeWhere((g) => g.id == group.id);
     _groups.insert(0, group);
     notifyListeners();
     return group;
   }
 
-  GroupInviteResult joinWithInviteCode(String code, {String memberName = 'You'}) {
+  /// Joins a group by invite code through the `join_group_with_code`
+  /// database function, then reloads the group list.
+  Future<GroupInviteResult> joinWithInviteCode(
+    String code, {
+    String memberName = 'You',
+  }) async {
     final normalizedCode = code.trim().toUpperCase();
     if (normalizedCode.isEmpty) return GroupInviteResult.invalidCode;
 
-    final joined = _groups.where((group) => group.isJoined);
-    final existing = joined.where(
+    final alreadyJoined = joinedGroups.any(
       (group) => group.inviteCode.toUpperCase() == normalizedCode,
     );
-    if (existing.isNotEmpty) return GroupInviteResult.alreadyJoined;
+    if (alreadyJoined) return GroupInviteResult.alreadyJoined;
 
-    final invite = _demoInvite(normalizedCode);
-    if (invite == null) return GroupInviteResult.invalidCode;
-    if (_dateOnly(_clock()).isAfter(invite.inviteExpiresOn)) {
-      return GroupInviteResult.expiredCode;
+    final client = Backend.client;
+    if (client == null || Backend.userId == null) {
+      return GroupInviteResult.invalidCode;
     }
-    if (!invite.canJoin) return GroupInviteResult.accessDenied;
 
-    final member = GroupMember(
-      id: 'current-user',
-      name: memberName.trim().isEmpty ? 'You' : memberName.trim(),
-      points: 0,
-      isCurrentUser: true,
+    final result = await client.rpc(
+      'join_group_with_code',
+      params: {'p_code': normalizedCode},
     );
-    final joinedGroup = BehtarGroup(
-      id: invite.id,
-      name: invite.name,
-      description: invite.description,
-      visibility: invite.visibility,
-      inviteCode: invite.inviteCode,
-      inviteExpiresOn: invite.inviteExpiresOn,
-      members: [...invite.members, member],
-      isCreator: false,
-      isJoined: true,
-    );
-    _groups.insert(0, joinedGroup);
+    final outcome = switch (result as String?) {
+      'joined' => GroupInviteResult.joined,
+      'already_joined' => GroupInviteResult.alreadyJoined,
+      'expired_code' => GroupInviteResult.expiredCode,
+      'access_denied' => GroupInviteResult.accessDenied,
+      _ => GroupInviteResult.invalidCode,
+    };
+    if (outcome == GroupInviteResult.joined ||
+        outcome == GroupInviteResult.alreadyJoined) {
+      await load();
+    }
+    return outcome;
+  }
+
+  /// Clears everything (used on sign out).
+  void reset() {
+    _groups.clear();
+    loadError = null;
     notifyListeners();
-    return GroupInviteResult.joined;
   }
 
-  static List<BehtarGroup> _sampleGroups(DateTime now) {
-    final expiry = _dateOnly(now).add(const Duration(days: 30));
-    return [
-      BehtarGroup(
-        id: 'mindful-circle',
-        name: 'Mindful Circle',
-        description: 'A friendly space for daily reflection and mindful habits.',
-        visibility: GroupVisibility.public,
-        inviteCode: 'BEHTAR7',
-        inviteExpiresOn: expiry,
-        members: const [
-          GroupMember(
-            id: 'current-user',
-            name: 'Hassan',
-            points: 480,
-            isCurrentUser: true,
-          ),
-          GroupMember(id: 'sara', name: 'Sara Ahmed', points: 440),
-          GroupMember(id: 'ali', name: 'Ali Raza', points: 440),
-          GroupMember(id: 'amina', name: 'Amina Khan', points: 310),
-        ],
-        isCreator: true,
-        isJoined: true,
-      ),
-      BehtarGroup(
-        id: 'weekend-walkers',
-        name: 'Weekend Walkers',
-        description: 'Encouraging each other to get outside and move more.',
-        visibility: GroupVisibility.private,
-        inviteCode: 'WALKERS8',
-        inviteExpiresOn: expiry,
-        members: const [
-          GroupMember(
-            id: 'current-user',
-            name: 'Hassan',
-            points: 260,
-            isCurrentUser: true,
-          ),
-          GroupMember(id: 'noor', name: 'Noor Fatima', points: 390),
-          GroupMember(id: 'omar', name: 'Omar Shah', points: 260),
-        ],
-        isCreator: false,
-        isJoined: true,
-      ),
-    ];
-  }
+  // ---------------------------------------------------------------------------
 
-  _InviteRecord? _demoInvite(String code) {
-    final today = _dateOnly(_clock());
-    switch (code) {
-      case 'OPEN42':
-        return _InviteRecord(
-          id: 'open-community',
-          name: 'Behtar Community',
-          description: 'A welcoming group to support your wellbeing journey.',
-          visibility: GroupVisibility.public,
-          inviteCode: code,
-          inviteExpiresOn: today.add(const Duration(days: 30)),
-          members: const [
-            GroupMember(id: 'layla', name: 'Layla Noor', points: 540),
-            GroupMember(id: 'zain', name: 'Zain Ali', points: 420),
-          ],
-          canJoin: true,
-        );
-      case 'INVITE7':
-        return _InviteRecord(
-          id: 'private-invitation',
-          name: 'Quiet Morning Club',
-          description: 'A private group for building a calmer morning routine.',
-          visibility: GroupVisibility.private,
-          inviteCode: code,
-          inviteExpiresOn: today.add(const Duration(days: 14)),
-          members: const [
-            GroupMember(id: 'maya', name: 'Maya Iqbal', points: 360),
-          ],
-          canJoin: true,
-        );
-      case 'EXPIRED7':
-        return _InviteRecord(
-          id: 'expired-invitation',
-          name: 'Expired invitation',
-          description: 'This invite is no longer active.',
-          visibility: GroupVisibility.private,
-          inviteCode: code,
-          inviteExpiresOn: today.subtract(const Duration(days: 1)),
-          members: const [],
-          canJoin: true,
-        );
-      case 'DENIED7':
-        return _InviteRecord(
-          id: 'restricted-invitation',
-          name: 'Restricted group',
-          description: 'This invitation is not available to this account.',
-          visibility: GroupVisibility.private,
-          inviteCode: code,
-          inviteExpiresOn: today.add(const Duration(days: 14)),
-          members: const [],
-          canJoin: false,
-        );
+  int _myPoints() {
+    for (final group in _groups) {
+      for (final member in group.members) {
+        if (member.isCurrentUser) return member.points;
+      }
     }
-    return null;
+    return 0;
   }
 
-  static DateTime _dateOnly(DateTime date) =>
-      DateTime(date.year, date.month, date.day);
-}
-
-class _InviteRecord {
-  const _InviteRecord({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.visibility,
-    required this.inviteCode,
-    required this.inviteExpiresOn,
-    required this.members,
-    required this.canJoin,
-  });
-
-  final String id;
-  final String name;
-  final String description;
-  final GroupVisibility visibility;
-  final String inviteCode;
-  final DateTime inviteExpiresOn;
-  final List<GroupMember> members;
-  final bool canJoin;
+  static String _generateInviteCode() {
+    // No 0/O/1/I so codes are easy to read out loud.
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final random = Random.secure();
+    final suffix = List.generate(
+      6,
+      (_) => alphabet[random.nextInt(alphabet.length)],
+    ).join();
+    return 'BHT$suffix';
+  }
 }

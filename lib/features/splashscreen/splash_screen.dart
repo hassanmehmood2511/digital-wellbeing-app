@@ -281,7 +281,7 @@ class _SplashScreenState extends State<SplashScreen>
             width: 16 * scale,
             height: 16 * scale,
             decoration: const BoxDecoration(
-              color: const Color(0xFF075B49),
+              color: Color(0xFF075B49),
               shape: BoxShape.circle,
             ),
           ),
@@ -468,4 +468,4 @@ class _BackgroundPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BackgroundPainter oldDelegate) => false;
-}
+}

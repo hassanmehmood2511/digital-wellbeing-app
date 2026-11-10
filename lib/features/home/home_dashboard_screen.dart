@@ -9,15 +9,25 @@ import '../settings/settings_controller.dart';
 import 'models/dashboard_data.dart';
 import 'widgets/dashboard_widgets.dart';
 import '../../core/widgets/behtar_progress_bar.dart';
+import '../challenges/challenges_controller.dart';
+import '../rewards/rewards_store.dart';
+import '../../core/notifications/notification_inbox.dart';
+import '../notifications/notifications_screen.dart';
+import '../../core/utils/date_formatters.dart';
 
-/// Compile-time switch for the developer-only scenario preview menu.
-/// Enable with: --dart-define=dashboard_state_preview=true
-const bool _kScenarioPreviewEnabled = bool.fromEnvironment(
-  'dashboard_state_preview',
-);
+/// What the dashboard is currently showing.
+enum _HomeStatus { loading, error, ready }
 
 class HomeDashboardScreen extends StatefulWidget {
-  const HomeDashboardScreen({this.controller, this.onOpenTab, super.key});
+  const HomeDashboardScreen({
+    this.controller,
+    this.onOpenTab,
+    this.challengesController,
+    super.key,
+  });
+
+  /// Shared challenges data (from the navigation shell) for the 7-day card.
+  final ChallengesController? challengesController;
 
   /// Existing profile/settings source used for the greeting and avatar.
   final SettingsController? controller;
@@ -36,7 +46,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   static const int _tabApps = 4;
   static const int _tabProfile = 5;
 
-  DashboardScenario _scenario = DashboardScenario.firstUse;
+  _HomeStatus _status = _HomeStatus.ready;
   SettingsController? _listenedController;
 
   // Owns the Groups data for the "View Group" action so the existing
@@ -49,7 +59,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     super.initState();
     _attachController(widget.controller);
     HabitStore.instance.addListener(_onHabitsChanged);
-    _showLoadingPreview();
+    PointsStore.instance.addListener(_onHabitsChanged);
+    AppData().addListener(_onHabitsChanged);
+    NotificationInbox.instance.addListener(_onHabitsChanged);
+    widget.challengesController?.addListener(_onHabitsChanged);
+    _refresh();
   }
 
   @override
@@ -64,6 +78,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   @override
   void dispose() {
     HabitStore.instance.removeListener(_onHabitsChanged);
+    PointsStore.instance.removeListener(_onHabitsChanged);
+    AppData().removeListener(_onHabitsChanged);
+    NotificationInbox.instance.removeListener(_onHabitsChanged);
+    widget.challengesController?.removeListener(_onHabitsChanged);
     _detachController();
     _groupsController.dispose();
     super.dispose();
@@ -87,41 +105,53 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _showLoadingPreview() async {
-    setState(() => _scenario = DashboardScenario.loading);
-    await Future<void>.delayed(const Duration(milliseconds: 700));
+  /// Loads (or reloads) everything Home shows from Supabase.
+  Future<void> _refresh() async {
+    final firstLoad = !HabitStore.instance.hasLoaded;
+    if (firstLoad) setState(() => _status = _HomeStatus.loading);
+    await Future.wait<void>([
+      if (widget.controller != null) widget.controller!.load(),
+      HabitStore.instance.load(),
+      PointsStore.instance.load(),
+      NotificationInbox.instance.refresh(),
+      AppData().load(),
+      if (widget.challengesController != null)
+        widget.challengesController!.load(),
+    ]);
     if (!mounted) return;
-    _applyScenario(DashboardScenario.firstUse);
+    final failed =
+        HabitStore.instance.loadError != null && !HabitStore.instance.hasLoaded;
+    setState(() => _status = failed ? _HomeStatus.error : _HomeStatus.ready);
   }
 
-  void _applyScenario(DashboardScenario scenario) {
-    setState(() => _scenario = scenario);
+  /// Live dashboard numbers built from the signed-in user's data.
+  DashboardData get _liveData {
+    final challenge = widget.challengesController?.featuredChallenge;
+    final points = PointsStore.instance;
+    return DashboardData(
+      points: points.balance,
+      pointsDelta: points.earnedToday,
+      streak: HabitStore.instance.bestStreak,
+      focusLabel: '${_totalHabits - _completedCount}',
+      screenTimeLabel: '0m',
+      screenTimeSubtitle: _trackedLimitMinutes > 0
+          ? 'Limit: ${formatMinutes(_trackedLimitMinutes)}'
+          : 'No limit set yet',
+      challengeName: challenge?.title ?? 'No active challenge',
+      challengeProgress: challenge?.completedDays ?? 0,
+      challengeTotal: 7,
+      challengeReward: challenge == null
+          ? 'Join a challenge to earn ${RewardConfig.challengeCompletionBonus} points'
+          : '${RewardConfig.challengeCompletionBonus} points',
+      completedHabits: _completedCount,
+      totalHabits: _totalHabits,
+    );
   }
 
-  void _selectScenario(DashboardScenario scenario) {
-    if (scenario == DashboardScenario.loading) {
-      _showLoadingPreview();
-      return;
-    }
+  int get _completedCount =>
+      HabitStore.instance.habits.where((habit) => habit.isCompleted).length;
 
-    _applyScenario(scenario);
-  }
-
-  // Prefer the shared HabitStore singleton so completing a habit on the Habits
-  // screen updates this summary; fall back to scenario data when it is empty.
-  int get _completedCount {
-    final live = HabitStore.instance.habits;
-    if (live.isNotEmpty) {
-      return live.where((habit) => habit.isCompleted).length;
-    }
-    return DashboardData.forScenario(_scenario).completedHabits;
-  }
-
-  int get _totalHabits {
-    final live = HabitStore.instance.habits;
-    if (live.isNotEmpty) return live.length;
-    return DashboardData.forScenario(_scenario).totalHabits;
-  }
+  int get _totalHabits => HabitStore.instance.habits.length;
 
   double get _progressFraction =>
       _totalHabits == 0 ? 0 : _completedCount / _totalHabits;
@@ -148,13 +178,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       .where((app) => app.isTracked)
       .fold(0, (sum, app) => sum + app.dailyLimitMinutes);
 
-  String _formatMinutes(int totalMinutes) {
-    final hours = totalMinutes ~/ 60;
-    final minutes = totalMinutes % 60;
-    if (hours == 0) return '${minutes}m';
-    if (minutes == 0) return '${hours}h';
-    return '${hours}h ${minutes}m';
-  }
 
   void _openTab(int index) {
     final callback = widget.onOpenTab;
@@ -176,9 +199,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       MaterialPageRoute<void>(
         builder: (_) => GroupsScreen(
           controller: _groupsController,
-          currentUserName: widget.controller?.fullName.trim().isNotEmpty == true
-              ? widget.controller!.fullName.trim()
-              : 'Hassan',
+          currentUserName: widget.controller?.displayName ?? 'You',
         ),
       ),
     );
@@ -189,7 +210,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: _showLoadingPreview,
+          onRefresh: _refresh,
           child: DecoratedBox(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -220,12 +241,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     ],
                   ),
                 ),
-                if (_scenario == DashboardScenario.loading)
+                if (_status == _HomeStatus.loading)
                   _buildLoadingState()
-                else if (_scenario == DashboardScenario.error)
+                else if (_status == _HomeStatus.error)
                   _buildErrorState()
-                else if (_scenario == DashboardScenario.empty)
-                  _buildEmptyState()
                 else
                   _buildDashboardContent(context),
               ],
@@ -239,7 +258,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
     final fullName = widget.controller?.fullName.trim() ?? '';
-    final displayName = fullName.isNotEmpty ? fullName : 'Hassan';
+    final displayName = fullName.isNotEmpty
+        ? fullName
+        : (widget.controller?.displayName ?? 'Friend');
     final initials = _initials(displayName);
 
     return Column(
@@ -274,39 +295,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               ),
             ),
             const SizedBox(width: BehtarSpacing.sm),
-            IconButton(
-              tooltip: 'Notifications',
-              onPressed: () {},
-              icon: const Icon(Icons.notifications_none_rounded),
-            ),
-            if (_kScenarioPreviewEnabled)
-              PopupMenuButton<DashboardScenario>(
-                tooltip: 'Preview dashboard states',
-                icon: const Icon(Icons.tune_rounded),
-                onSelected: _selectScenario,
-                itemBuilder: (context) => const [
-                  PopupMenuItem<DashboardScenario>(
-                    value: DashboardScenario.firstUse,
-                    child: Text('First use'),
-                  ),
-                  PopupMenuItem<DashboardScenario>(
-                    value: DashboardScenario.completedDay,
-                    child: Text('Completed day'),
-                  ),
-                  PopupMenuItem<DashboardScenario>(
-                    value: DashboardScenario.empty,
-                    child: Text('Empty'),
-                  ),
-                  PopupMenuItem<DashboardScenario>(
-                    value: DashboardScenario.loading,
-                    child: Text('Loading'),
-                  ),
-                  PopupMenuItem<DashboardScenario>(
-                    value: DashboardScenario.error,
-                    child: Text('Error'),
-                  ),
-                ],
+            _NotificationBell(
+              unread: NotificationInbox.instance.unreadCount,
+              onPressed: () => Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      NotificationsScreen(onOpenTab: widget.onOpenTab),
+                ),
               ),
+            ),
             GestureDetector(
               onTap: () => _openTab(_tabProfile),
               child: CircleAvatar(
@@ -354,7 +351,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Widget _buildDashboardContent(BuildContext context) {
-    final data = DashboardData.forScenario(_scenario);
+    final data = _liveData;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,20 +443,41 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             ],
           ),
           const SizedBox(height: BehtarSpacing.base),
-          Row(
-            children: [
-              DashboardMiniStat(
-                label: 'Focus time',
+          // Two equal-height cards side by side; stacked on very narrow
+          // screens so nothing gets squeezed.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final habitsLeft = DashboardMiniStat(
+                label: 'Habits left',
                 value: data.focusLabel,
-                icon: Icons.timer_rounded,
-              ),
-              const SizedBox(width: BehtarSpacing.base),
-              DashboardMiniStat(
+                icon: Icons.pending_actions_rounded,
+              );
+              final wellness = DashboardMiniStat(
                 label: 'Daily Wellness',
                 value: _wellnessStatus,
                 icon: Icons.mood_rounded,
-              ),
-            ],
+              );
+              if (constraints.maxWidth < 300) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    habitsLeft,
+                    const SizedBox(height: BehtarSpacing.sm),
+                    wellness,
+                  ],
+                );
+              }
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: habitsLeft),
+                    const SizedBox(width: BehtarSpacing.md),
+                    Expanded(child: wellness),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -488,9 +506,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         iconBackground: BehtarColors.mint,
         iconColor: BehtarColors.primary,
         label: 'Screen Time',
-        value: hasUsage ? _formatMinutes(usage) : data.screenTimeLabel,
+        value: hasUsage ? formatMinutes(usage) : data.screenTimeLabel,
         subtitle: hasUsage
-            ? 'Limit: ${_formatMinutes(_trackedLimitMinutes)}'
+            ? 'Limit: ${formatMinutes(_trackedLimitMinutes)}'
             : data.screenTimeSubtitle,
       ),
     );
@@ -665,31 +683,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     return const DashboardLoadingCard();
   }
 
-  Widget _buildEmptyState() {
-    return DashboardStateCard(
-      icon: Icons.checklist_rounded,
-      title: 'No habits started yet',
-      description:
-          'Start with a small habit, then come back here to track your momentum.',
-      buttonLabel: 'Add a habit',
-      onButton: () => _openTab(_tabHabits),
-    );
-  }
-
   Widget _buildErrorState() {
     return DashboardStateCard(
       icon: Icons.error_outline_rounded,
       title: 'Something went wrong',
       description: 'We could not load your dashboard. Try again in a moment.',
       buttonLabel: 'Retry',
-      onButton: _showLoadingPreview,
+      onButton: _refresh,
     );
-  }
-
-  String _firstName() {
-    final fullName = widget.controller?.fullName.trim() ?? '';
-    if (fullName.isEmpty) return 'there';
-    return fullName.split(RegExp(r'\s+')).first;
   }
 
   String _initials(String name) {
@@ -717,5 +718,32 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     if (hour >= 12 && hour < 17) return 'Good afternoon';
     if (hour >= 17 && hour < 21) return 'Good evening';
     return 'Good night';
+  }
+}
+
+
+/// Bell with an unread count badge.
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell({required this.unread, required this.onPressed});
+
+  final int unread;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: unread > 0 ? 'Notifications ($unread unread)' : 'Notifications',
+      onPressed: onPressed,
+      icon: Badge(
+        isLabelVisible: unread > 0,
+        backgroundColor: BehtarColors.primary,
+        label: Text(unread > 9 ? '9+' : '$unread'),
+        child: Icon(
+          unread > 0
+              ? Icons.notifications_rounded
+              : Icons.notifications_none_rounded,
+        ),
+      ),
+    );
   }
 }

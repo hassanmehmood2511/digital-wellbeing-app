@@ -4,11 +4,19 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/auth_background_painter.dart';
+import '../../../core/backend/backend.dart';
+import '../widgets/auth_ui.dart';
 
 class SignUpScreen extends StatefulWidget {
   /// Called after all validation passes. Connect your backend here.
   /// The phone number is in full international format, e.g. +923001234567.
-  final void Function(String name, String email, String phone, String password)?
+  /// Throw to show an error message on this screen.
+  final Future<void> Function(
+    String name,
+    String email,
+    String phone,
+    String password,
+  )?
   onSignUp;
   final VoidCallback? onLogin;
 
@@ -22,12 +30,10 @@ class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
   static const Color primaryGreen = Color(0xFF10B982);
   static const Color secondaryGreen = Color(0xFF075B49);
-  static const Color sageGreen = Color(0xFF667873);
   static const Color background = Color(0xFFF4F8F7);
   static const Color primaryText = Color(0xFF172B27);
   static const Color secondaryText = Color(0xFF667873);
   static const Color borderColor = Color(0xFFDCE8E3);
-  static const Color logoGreen = Color(0xFF075B49);
 
   // Known disposable / temporary email providers.
   // Extend this list over time. A server-side check is still recommended.
@@ -275,7 +281,7 @@ class _SignUpScreenState extends State<SignUpScreen>
     );
   }
 
-  void _handleSignUp() {
+  Future<void> _handleSignUp() async {
     if (_isSubmitting) return;
     FocusScope.of(context).unfocus();
 
@@ -293,11 +299,20 @@ class _SignUpScreenState extends State<SignUpScreen>
     final email = _emailController.text.trim().toLowerCase();
     final fullPhone = '+$_dialCode$phone';
 
-    if (widget.onSignUp != null) {
-      setState(() => _isSubmitting = true);
-      widget.onSignUp!(name, email, fullPhone, _passwordController.text);
-    } else {
-      _showMessage('Sign Up UI is ready. Connect your backend to continue.');
+    final onSignUp = widget.onSignUp;
+    if (onSignUp == null) {
+      _showMessage('Sign up is not available right now.');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await onSignUp(name, email, fullPhone, _passwordController.text);
+      if (mounted) setState(() => _isSubmitting = false);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      _showMessage(friendlyErrorMessage(error));
     }
   }
 
@@ -345,17 +360,6 @@ class _SignUpScreenState extends State<SignUpScreen>
       focusedBorder: border(primaryGreen, 1.5),
       errorBorder: border(Colors.redAccent),
       focusedErrorBorder: border(Colors.redAccent, 1.5),
-    );
-  }
-
-  Widget _label(String text, double scale) {
-    return Text(
-      text,
-      style: GoogleFonts.poppins(
-        fontSize: 13 * scale,
-        fontWeight: FontWeight.w600,
-        color: primaryText,
-      ),
     );
   }
 
@@ -508,7 +512,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 // Behtar logo (same as splash screen).
-                                Center(child: _buildLogo(0.6 * scale)),
+                                Center(child: BehtarBlinkingLogo(blink: _blink, scale: 0.6 * scale)),
 
                                 SizedBox(height: 12 * scale),
 
@@ -538,7 +542,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 SizedBox(height: 24 * scale),
 
                                 // Full name
-                                _label('Full Name', scale),
+                                AuthFieldLabel('Full Name', scale: scale),
                                 SizedBox(height: 8 * scale),
                                 TextFormField(
                                   controller: _nameController,
@@ -558,7 +562,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 SizedBox(height: 16 * scale),
 
                                 // Email
-                                _label('Email Address', scale),
+                                AuthFieldLabel('Email Address', scale: scale),
                                 SizedBox(height: 8 * scale),
                                 TextFormField(
                                   controller: _emailController,
@@ -582,7 +586,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 SizedBox(height: 16 * scale),
 
                                 // Phone (worldwide country picker)
-                                _label('Phone Number', scale),
+                                AuthFieldLabel('Phone Number', scale: scale),
                                 SizedBox(height: 8 * scale),
                                 TextFormField(
                                   controller: _phoneController,
@@ -608,7 +612,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 SizedBox(height: 16 * scale),
 
                                 // Password
-                                _label('Password', scale),
+                                AuthFieldLabel('Password', scale: scale),
                                 SizedBox(height: 8 * scale),
                                 TextFormField(
                                   controller: _passwordController,
@@ -658,7 +662,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 SizedBox(height: 16 * scale),
 
                                 // Confirm password
-                                _label('Confirm Password', scale),
+                                AuthFieldLabel('Confirm Password', scale: scale),
                                 SizedBox(height: 8 * scale),
                                 TextFormField(
                                   controller: _confirmController,
@@ -833,65 +837,6 @@ class _SignUpScreenState extends State<SignUpScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // Animated Behtar logo (same design as the splash screen).
-  Widget _buildLogo(double scale) {
-    Widget buildEye(double left) {
-      return Positioned(
-        left: left * scale,
-        top: 40 * scale,
-        child: AnimatedBuilder(
-          animation: _blink,
-          child: Container(
-            width: 16 * scale,
-            height: 16 * scale,
-            decoration: const BoxDecoration(
-              color: logoGreen,
-              shape: BoxShape.circle,
-            ),
-          ),
-          builder: (context, child) {
-            return Transform.scale(
-              alignment: Alignment.center,
-              scaleY: _blink.value,
-              child: child,
-            );
-          },
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: 92 * scale,
-      height: 147 * scale,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.65),
-          borderRadius: BorderRadius.circular(20 * scale),
-          border: Border.all(color: sageGreen.withValues(alpha: 0.55)),
-          boxShadow: [
-            BoxShadow(
-              color: primaryGreen.withValues(alpha: 0.07),
-              blurRadius: 24 * scale,
-              offset: Offset(0, 10 * scale),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20 * scale),
-                border: Border.all(color: logoGreen, width: 8 * scale),
-              ),
-            ),
-            buildEye(22),
-            buildEye(52),
-          ],
-        ),
       ),
     );
   }

@@ -1,36 +1,28 @@
-import 'package:digital_wellbeing_app/features/home/models/dashboard_data.dart';
+import 'package:digital_wellbeing_app/core/utils/date_formatters.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// Helpers used by the Home dashboard and the screen-time screens.
 void main() {
-  group('DashboardData', () {
-    test('first-use preview retains its habit and challenge progress', () {
-      final data = DashboardData.forScenario(DashboardScenario.firstUse);
+  group('formatMinutes', () {
+    test('formats minutes, hours and mixed durations', () {
+      expect(formatMinutes(0), '0m');
+      expect(formatMinutes(45), '45m');
+      expect(formatMinutes(60), '1h');
+      expect(formatMinutes(150), '2h 30m');
+    });
+  });
 
-      expect(data.completedHabits, 2);
-      expect(data.totalHabits, 4);
-      expect(data.challengeProgress, 4);
-      expect(data.challengeTotal, 7);
+  group('dates', () {
+    test('dateOnly drops the time of day', () {
+      expect(dateOnly(DateTime(2026, 11, 11, 23, 59)), DateTime(2026, 11, 11));
     });
 
-    test('completed-day preview marks all habits complete', () {
-      final data = DashboardData.forScenario(DashboardScenario.completedDay);
-
-      expect(data.completedHabits, data.totalHabits);
-      expect(data.totalHabits, 4);
-      expect(data.challengeProgress, data.challengeTotal);
+    test('dateKey is a zero-padded yyyy-MM-dd string', () {
+      expect(dateKey(DateTime(2026, 3, 7, 10)), '2026-03-07');
     });
 
-    test('empty, loading, and error previews have no habit progress', () {
-      for (final scenario in [
-        DashboardScenario.empty,
-        DashboardScenario.loading,
-        DashboardScenario.error,
-      ]) {
-        final data = DashboardData.forScenario(scenario);
-
-        expect(data.completedHabits, 0);
-        expect(data.totalHabits, 0);
-      }
+    test('formatDate is short and readable', () {
+      expect(formatDate(DateTime(2026, 11, 11)), 'Nov 11, 2026');
     });
   });
 }

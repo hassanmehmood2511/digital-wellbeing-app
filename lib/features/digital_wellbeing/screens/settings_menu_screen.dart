@@ -3,6 +3,7 @@ import 'package:digital_wellbeing_app/core/theme/app_colors.dart';
 import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'tracked_apps_screen.dart';
 import 'usage_limits_screen.dart';
+import 'permission_screen.dart';
 
 class SettingsMenuScreen extends StatelessWidget {
   const SettingsMenuScreen({super.key});
@@ -23,6 +24,21 @@ class SettingsMenuScreen extends StatelessWidget {
           children: [
             Text('App Preferences', style: AppTypography.h3),
             const SizedBox(height: 16),
+
+            _buildSettingsCard(
+              context: context,
+              icon: Icons.lock_clock_outlined,
+              title: 'Usage Access',
+              subtitle: 'Allow Behtar to record your screen time',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PermissionScreen()),
+                );
+              },
+            ),
+
+            const SizedBox(height: 12),
 
             _buildSettingsCard(
               context: context,

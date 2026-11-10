@@ -40,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
                     backgroundColor: BehtarColors.mint,
                     foregroundColor: BehtarColors.primary,
                     child: Text(
-                      _initials(controller.fullName),
+                      _initials(controller.displayName),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: BehtarColors.primary,
                           ),
@@ -52,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          controller.fullName,
+                          controller.displayName,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: BehtarSpacing.xs),

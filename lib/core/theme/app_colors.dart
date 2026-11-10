@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// Behtar's colour palette — the single source of truth for every colour.
+/// `BehtarColors` (in app_theme.dart) exposes the same values for widgets
+/// that use the theme's naming.
 class AppColors {
   AppColors._();
 
@@ -35,42 +38,4 @@ class AppColors {
   static const Color success = Color(0xFF10B982);
   static const Color error = Color(0xFFEF4444);
   static const Color primarySoft = Color(0xFFD0FAE4);
-}
-
-abstract class BehtarColors {
-  static const Color primary = AppColors.primary;
-  static const Color secondary = AppColors.secondary;
-  static const Color lightGreen = AppColors.lightGreen;
-  static const Color sage = AppColors.sage;
-  static const Color mint = AppColors.mint;
-  static const Color background = AppColors.background;
-  static const Color surface = AppColors.surface;
-  static const Color white = AppColors.white;
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
-  static const Color primaryText = AppColors.primaryText;
-  static const Color secondaryText = AppColors.secondaryText;
-  static const Color border = AppColors.border;
-  static const Color warning = AppColors.warning;
-  static const Color success = AppColors.success;
-  static const Color error = AppColors.error;
-}
-
-abstract class BehtarSpacing {
-  static const double xs = 4.0;
-  static const double sm = 8.0;
-  static const double md = 12.0;
-  static const double base = 16.0;
-  static const double lg = 24.0;
-  static const double xl = 32.0;
-  static const double xxl = 48.0;
-}
-
-abstract class BehtarRadii {
-  static const double sm = 8.0;
-  static const double md = 12.0;
-  static const double control = 12.0;
-  static const double card = 16.0;
-  static const double lg = 24.0;
-  static const double pill = 999.0;
 }

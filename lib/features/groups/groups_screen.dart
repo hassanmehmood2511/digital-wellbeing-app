@@ -8,11 +8,12 @@ import 'group.dart';
 import 'groups_controller.dart';
 import 'leaderboard.dart';
 import 'widgets/group_widgets.dart';
+import '../../core/backend/backend.dart';
 
 class GroupsScreen extends StatefulWidget {
   const GroupsScreen({
     required this.controller,
-    this.currentUserName = 'Hassan',
+    this.currentUserName = 'You',
     super.key,
   });
 
@@ -124,7 +125,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
             ],
             const SizedBox(height: BehtarSpacing.sm),
             Text(
-              'Group activity and points are sample data stored on this device.',
+              'Points come from habits and challenges each member completes.',
               style: Theme.of(context).textTheme.labelMedium,
               textAlign: TextAlign.center,
             ),
@@ -244,8 +245,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                 ),
                 const SizedBox(height: BehtarSpacing.sm),
                 Text(
-                  'Demo codes: OPEN42 (public), INVITE7 (private), '
-                  'EXPIRED7, DENIED7.',
+                  'Ask a group member to share their group’s invite code.',
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
                 if (_error != null) ...[
@@ -277,12 +277,19 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   Future<void> _join() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isJoining = true);
-    await Future<void>.delayed(const Duration(milliseconds: 160));
+    final GroupInviteResult result;
+    try {
+      result = await widget.controller.joinWithInviteCode(
+        _codeController.text,
+        memberName: widget.memberName,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isJoining = false);
+      showSettingsMessage(context, friendlyErrorMessage(error));
+      return;
+    }
     if (!mounted) return;
-    final result = widget.controller.joinWithInviteCode(
-      _codeController.text,
-      memberName: widget.memberName,
-    );
     if (result == GroupInviteResult.joined ||
         result == GroupInviteResult.alreadyJoined) {
       Navigator.pop(context, result);
@@ -316,6 +323,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   GroupVisibility _visibility = GroupVisibility.public;
   bool _showPreview = false;
   String? _saveError;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -450,8 +458,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           ),
           const SizedBox(height: BehtarSpacing.lg),
           FilledButton(
-            onPressed: _saveGroup,
-            child: const Text('Create group'),
+            onPressed: _isSaving ? null : _saveGroup,
+            child: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.4),
+                  )
+                : const Text('Create group'),
           ),
           const SizedBox(height: BehtarSpacing.sm),
           TextButton(
@@ -484,17 +498,32 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     });
   }
 
-  void _saveGroup() {
+  Future<void> _saveGroup() async {
+    setState(() {
+      _isSaving = true;
+      _saveError = null;
+    });
     try {
-      final group = widget.controller.createGroup(
+      final group = await widget.controller.createGroup(
         name: _nameController.text,
         description: _descriptionController.text,
         visibility: _visibility,
         creatorName: widget.creatorName,
       );
+      if (!mounted) return;
       Navigator.of(context).pop(group);
     } on ArgumentError catch (error) {
-      setState(() => _saveError = error.message.toString());
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _saveError = error.message.toString();
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _saveError = friendlyErrorMessage(error);
+      });
     }
   }
 }

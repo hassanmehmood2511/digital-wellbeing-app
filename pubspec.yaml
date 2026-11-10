@@ -32,6 +32,9 @@ dependencies:
   shared_preferences: ^2.5.6
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.18.3
+  # Reminders (habit, check-in, tips, screen-time alerts).
+  flutter_local_notifications: ^19.5.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

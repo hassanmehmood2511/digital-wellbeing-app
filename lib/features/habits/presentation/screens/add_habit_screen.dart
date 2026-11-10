@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../data/habit_store.dart';
 import '../../models/habit_model.dart';
+import '../../../../core/backend/backend.dart';
 
 class AddHabitScreen extends StatefulWidget {
   const AddHabitScreen({super.key});
@@ -68,8 +69,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         : _selectedCategory;
 
     final habit = HabitModel(
-      habitId: 'habit_${DateTime.now().millisecondsSinceEpoch}',
-      ownerUid: 'user_001',
+      habitId: newUuid(),
+      ownerUid: Backend.userId ?? 'local',
       title: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
       category: category,
@@ -100,7 +101,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         elevation: AppSpacing.elevationNone,
         scrolledUnderElevation: AppSpacing.elevationNone,
         surfaceTintColor: Colors.transparent,
-        title: Text('Create Habit', style: AppTextStyles.h2),
+        title: Text('Create Habit', style: AppTypography.h2),
       ),
       body: Form(
         key: _formKey,
@@ -129,7 +130,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               Text(
                 'Habit name',
-                style: AppTextStyles.label.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -139,7 +140,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               TextFormField(
                 controller: _nameController,
                 textInputAction: TextInputAction.next,
-                style: AppTextStyles.body.copyWith(
+                style: AppTypography.body.copyWith(
                   color: AppColors.textPrimary,
                 ),
                 decoration: _inputDecoration(
@@ -162,7 +163,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               Text(
                 'Description',
-                style: AppTextStyles.label.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -172,7 +173,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
-                style: AppTextStyles.body.copyWith(
+                style: AppTypography.body.copyWith(
                   color: AppColors.textPrimary,
                 ),
                 decoration: _inputDecoration(hintText: 'Describe your habit'),
@@ -189,7 +190,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               Text(
                 'Category',
-                style: AppTextStyles.label.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -199,7 +200,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
                 dropdownColor: AppColors.background,
-                style: AppTextStyles.body.copyWith(
+                style: AppTypography.body.copyWith(
                   color: AppColors.textPrimary,
                 ),
                 decoration: _inputDecoration(),
@@ -208,7 +209,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                     value: category,
                     child: Text(
                       category,
-                      style: AppTextStyles.body.copyWith(
+                      style: AppTypography.body.copyWith(
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -228,7 +229,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
                 Text(
                   'Custom category',
-                  style: AppTextStyles.label.copyWith(
+                  style: AppTypography.small.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
@@ -238,7 +239,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 TextFormField(
                   controller: _customCategoryController,
                   textInputAction: TextInputAction.next,
-                  style: AppTextStyles.body.copyWith(
+                  style: AppTypography.body.copyWith(
                     color: AppColors.textPrimary,
                   ),
                   decoration: _inputDecoration(
@@ -259,7 +260,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               Text(
                 'Frequency',
-                style: AppTextStyles.label.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -269,7 +270,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedFrequency,
                 dropdownColor: AppColors.background,
-                style: AppTextStyles.body.copyWith(
+                style: AppTypography.body.copyWith(
                   color: AppColors.textPrimary,
                 ),
                 decoration: _inputDecoration(),
@@ -278,7 +279,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                     value: frequency,
                     child: Text(
                       frequency,
-                      style: AppTextStyles.body.copyWith(
+                      style: AppTypography.body.copyWith(
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -298,7 +299,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               Text(
                 'Priority',
-                style: AppTextStyles.label.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -308,7 +309,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedPriority,
                 dropdownColor: AppColors.background,
-                style: AppTextStyles.body.copyWith(
+                style: AppTypography.body.copyWith(
                   color: AppColors.textPrimary,
                 ),
                 decoration: _inputDecoration(),
@@ -317,7 +318,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                     value: priority,
                     child: Text(
                       priority,
-                      style: AppTextStyles.body.copyWith(
+                      style: AppTypography.body.copyWith(
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -336,7 +337,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               Text(
                 'Daily target',
-                style: AppTextStyles.label.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -346,7 +347,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               TextFormField(
                 controller: _targetController,
                 keyboardType: TextInputType.number,
-                style: AppTextStyles.body.copyWith(
+                style: AppTypography.body.copyWith(
                   color: AppColors.textPrimary,
                 ),
                 decoration: _inputDecoration(hintText: 'e.g. 1'),
@@ -365,7 +366,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               Text(
                 'Choose an icon',
-                style: AppTextStyles.label.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -421,7 +422,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                       ),
                     ),
                   ),
-                  child: Text('Create Habit', style: AppTextStyles.button),
+                  child: Text('Create Habit', style: AppTypography.buttonBold),
                 ),
               ),
 
@@ -436,7 +437,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   InputDecoration _inputDecoration({String? hintText}) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: AppTextStyles.bodySmall.copyWith(
+      hintStyle: AppTypography.small.copyWith(
         color: AppColors.textSecondary,
       ),
       filled: true,

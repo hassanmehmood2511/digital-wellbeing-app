@@ -22,7 +22,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
-    expect(find.text('Profile saved on this device.'), findsOneWidget);
+    expect(find.text('Profile saved.'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
 

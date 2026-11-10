@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/auth_background_painter.dart';
+import '../../../core/backend/backend.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   /// Called with the email after validation passes.
@@ -117,10 +118,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         _linkSent = true;
       });
       _startCooldown();
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showMessage('Something went wrong. Please try again.');
+      _showMessage(friendlyErrorMessage(error));
     }
   }
 

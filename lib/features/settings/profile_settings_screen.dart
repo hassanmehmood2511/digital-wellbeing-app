@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'settings_controller.dart';
 import 'settings_widgets.dart';
+import '../../core/backend/backend.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   const ProfileSettingsScreen({required this.controller, super.key});
@@ -78,7 +79,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         const SizedBox(height: BehtarSpacing.sm),
         Center(
           child: Text(
-            'Your details stay on this device in this demo.',
+            'Your details are saved securely to your Behtar account.',
             style: Theme.of(context).textTheme.labelMedium,
             textAlign: TextAlign.center,
           ),
@@ -90,14 +91,27 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-    await widget.controller.saveMockChanges();
-    if (!mounted) return;
+    final previousName = widget.controller.fullName;
+    final previousPhone = widget.controller.phone;
     widget.controller.updateProfile(
       fullName: _nameController.text.trim(),
       phone: _phoneController.text.trim(),
     );
+    try {
+      await widget.controller.save();
+    } catch (error) {
+      widget.controller.updateProfile(
+        fullName: previousName,
+        phone: previousPhone,
+      );
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      showSettingsMessage(context, friendlyErrorMessage(error));
+      return;
+    }
+    if (!mounted) return;
     setState(() => _isSaving = false);
-    showSettingsMessage(context, 'Profile saved on this device.');
+    showSettingsMessage(context, 'Profile saved.');
   }
 }
 

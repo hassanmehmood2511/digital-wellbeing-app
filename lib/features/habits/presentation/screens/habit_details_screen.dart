@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../data/habit_store.dart';
 import '../../models/habit_model.dart';
 import '../../../rewards/reward_completion_service.dart';
@@ -23,7 +23,7 @@ class HabitDetailsScreen extends StatelessWidget {
         elevation: AppSpacing.elevationNone,
         titleSpacing: AppSpacing.base,
 
-        title: Text('Habit Details', style: AppTextStyles.h1),
+        title: Text('Habit Details', style: AppTypography.h1),
       ),
 
       body: ListenableBuilder(
@@ -38,7 +38,7 @@ class HabitDetailsScreen extends StatelessWidget {
 
           if (index == -1) {
             return Center(
-              child: Text('Habit not found.', style: AppTextStyles.body),
+              child: Text('Habit not found.', style: AppTypography.body),
             );
           }
 
@@ -58,7 +58,7 @@ class HabitDetailsScreen extends StatelessWidget {
 
                 const SizedBox(height: AppSpacing.lg),
 
-                Text('Habit Information', style: AppTextStyles.h2),
+                Text('Habit Information', style: AppTypography.h2),
 
                 const SizedBox(height: AppSpacing.md),
 
@@ -180,11 +180,11 @@ class HabitDetailsScreen extends StatelessWidget {
         return AlertDialog(
           backgroundColor: AppColors.white,
 
-          title: Text('Delete Habit?', style: AppTextStyles.h2),
+          title: Text('Delete Habit?', style: AppTypography.h2),
 
           content: Text(
             'Are you sure you want to delete "${habit.title}"?',
-            style: AppTextStyles.body,
+            style: AppTypography.body,
           ),
 
           actions: [
@@ -194,7 +194,7 @@ class HabitDetailsScreen extends StatelessWidget {
               },
               child: Text(
                 'Cancel',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -209,7 +209,7 @@ class HabitDetailsScreen extends StatelessWidget {
               },
               child: Text(
                 'Delete',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -258,11 +258,11 @@ class _HabitHeader extends StatelessWidget {
 
           const SizedBox(height: AppSpacing.md),
 
-          Text(habit.title, style: AppTextStyles.h1),
+          Text(habit.title, style: AppTypography.h1),
 
           const SizedBox(height: AppSpacing.sm),
 
-          Text(habit.description, style: AppTextStyles.body),
+          Text(habit.description, style: AppTypography.body),
         ],
       ),
     );
@@ -291,11 +291,11 @@ class _ProgressSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Progress', style: AppTextStyles.h2),
+              Text('Progress', style: AppTypography.h2),
 
               Text(
                 '${habit.completedCount}/${habit.targetCount}',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTypography.small.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -322,7 +322,7 @@ class _ProgressSection extends StatelessWidget {
 
           Text(
             '${(habit.progress * 100).round()}% completed',
-            style: AppTextStyles.bodySmall,
+            style: AppTypography.small,
           ),
         ],
       ),
@@ -375,13 +375,13 @@ class _InfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.bodySmall),
+                Text(title, style: AppTypography.small),
 
                 const SizedBox(height: AppSpacing.xs),
 
                 Text(
                   value,
-                  style: AppTextStyles.body.copyWith(
+                  style: AppTypography.body.copyWith(
                     color: AppColors.textPrimary,
                   ),
                 ),

@@ -157,35 +157,50 @@ class DashboardMiniStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: BehtarColors.mint,
-          borderRadius: BorderRadius.circular(BehtarRadii.control),
+    // Size is decided by the parent (equal-height row or stacked column);
+    // text shrinks to one line instead of wrapping onto a second line.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: BehtarColors.mint,
+        borderRadius: BorderRadius.circular(BehtarRadii.control),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: BehtarSpacing.md,
+          vertical: BehtarSpacing.sm + 2,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(BehtarSpacing.sm),
-          child: Row(
-            children: [
-              Icon(icon, color: BehtarColors.primary, size: 18),
-              const SizedBox(width: BehtarSpacing.xs),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label, style: Theme.of(context).textTheme.bodySmall),
-                    Text(
+        child: Row(
+          children: [
+            Icon(icon, color: BehtarColors.primary, size: 20),
+            const SizedBox(width: BehtarSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
                       value,
+                      maxLines: 1,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         color: BehtarColors.primaryText,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

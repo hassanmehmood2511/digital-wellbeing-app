@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../challenges/challenge.dart';
+import '../../core/backend/backend.dart';
 import 'reward_completion_dialog.dart';
 import 'rewards_store.dart';
 
@@ -11,7 +12,8 @@ Future<void> awardHabitCompletion(
 }) async {
   await _awardAndCelebrate(
     context,
-    id: 'habit:$habitId',
+    // One reward per habit per day.
+    id: 'habit:$habitId:${dateKey(DateTime.now())}',
     activityName: habitName,
     points: RewardConfig.habitCompletionPoints,
     type: RewardType.habit,

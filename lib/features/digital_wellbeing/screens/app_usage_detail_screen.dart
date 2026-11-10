@@ -5,6 +5,7 @@ import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usage.dart';
 import 'package:digital_wellbeing_app/features/digital_wellbeing/data/app_data.dart';
 import 'package:flutter/services.dart';
+import 'package:digital_wellbeing_app/core/utils/date_formatters.dart';
 
 class AppUsageDetailScreen extends StatefulWidget {
   final AppUsage appData;
@@ -22,8 +23,9 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
       orElse: () => widget.appData,
     );
 
-    final percentage =
-        currentAppData.usageMinutes / currentAppData.dailyLimitMinutes;
+    final percentage = currentAppData.dailyLimitMinutes > 0
+        ? currentAppData.usageMinutes / currentAppData.dailyLimitMinutes
+        : 0.0;
     final isOverLimit = percentage > 1.0;
     final timeSaved =
         currentAppData.dailyLimitMinutes - currentAppData.usageMinutes;
@@ -78,7 +80,7 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                 Column(
                   children: [
                     Text(
-                      _formatMinutes(currentAppData.usageMinutes),
+                      formatMinutes(currentAppData.usageMinutes),
                       style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -127,8 +129,8 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                         const SizedBox(height: 4),
                         Text(
                           isOverLimit
-                              ? 'You exceeded your limit by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}'
-                              : 'You saved ${_formatMinutes(timeSaved)} today',
+                              ? 'You exceeded your limit by ${formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}'
+                              : 'You saved ${formatMinutes(timeSaved)} today',
                           style: AppTypography.body,
                         ),
                       ],
@@ -153,19 +155,19 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
             const SizedBox(height: 12),
             _buildStatRow(
               'Daily Limit',
-              _formatMinutes(currentAppData.dailyLimitMinutes),
+              formatMinutes(currentAppData.dailyLimitMinutes),
               Icons.timer_outlined,
             ),
             _buildStatRow(
               'Time Used',
-              _formatMinutes(currentAppData.usageMinutes),
+              formatMinutes(currentAppData.usageMinutes),
               Icons.phone_android,
             ),
             _buildStatRow(
               'Remaining',
               isOverLimit
-                  ? 'Exceeded by ${_formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}'
-                  : _formatMinutes(timeSaved),
+                  ? 'Exceeded by ${formatMinutes((currentAppData.usageMinutes - currentAppData.dailyLimitMinutes).abs())}'
+                  : formatMinutes(timeSaved),
               isOverLimit ? Icons.trending_up : Icons.trending_down,
             ),
             _buildStatRow(
@@ -296,7 +298,7 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                   ),
 
                   Text(
-                    'Slider: ${_formatMinutes(newLimit.clamp(15, 1440))}',
+                    'Slider: ${formatMinutes(newLimit.clamp(15, 1440))}',
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -335,7 +337,7 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Total Limit: ${_formatMinutes(newLimit)}',
+                    'Total Limit: ${formatMinutes(newLimit)}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -410,11 +412,4 @@ class _AppUsageDetailScreenState extends State<AppUsageDetailScreen> {
     return FaIcon(iconData, color: AppColors.primary, size: 32);
   }
 
-  String _formatMinutes(int minutes) {
-    if (minutes < 60) return '${minutes}m';
-    int hours = minutes ~/ 60;
-    int remainingMinutes = minutes % 60;
-    if (remainingMinutes == 0) return '${hours}h';
-    return '${hours}h ${remainingMinutes}m';
-  }
 }

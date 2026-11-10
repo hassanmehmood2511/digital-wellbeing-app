@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/app_theme.dart';
 import 'settings_controller.dart';
 import 'settings_widgets.dart';
+import '../../core/backend/backend.dart';
 
 class AccountSettingsScreen extends StatelessWidget {
   const AccountSettingsScreen({required this.controller, super.key});
@@ -15,7 +17,7 @@ class AccountSettingsScreen extends StatelessWidget {
       title: 'Account settings',
       children: [
         Text(
-          'Manage how you use Behtar on this device.',
+          'Manage your Behtar account.',
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: BehtarColors.secondaryText),
@@ -53,7 +55,7 @@ class AccountSettingsScreen extends StatelessWidget {
                   'Privacy & data',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                subtitle: const Text('Your settings are stored locally'),
+                subtitle: const Text('Your data is stored securely in your account'),
               ),
             ],
           ),
@@ -93,7 +95,7 @@ class AccountSettingsScreen extends StatelessWidget {
         const SizedBox(height: BehtarSpacing.md),
         Center(
           child: Text(
-            'These actions are demonstrations only. No account data is changed.',
+            'Deleting your account permanently removes all your Behtar data.',
             style: Theme.of(context).textTheme.labelMedium,
             textAlign: TextAlign.center,
           ),
@@ -109,8 +111,7 @@ class AccountSettingsScreen extends StatelessWidget {
         icon: const Icon(Icons.logout_rounded, color: BehtarColors.primary),
         title: const Text('Sign out?'),
         content: const Text(
-          'This is a demo action. You will stay in the app and no account '
-          'session will be changed.',
+          'You will need to log in again to use Behtar on this device.',
         ),
         actions: [
           TextButton(
@@ -119,16 +120,20 @@ class AccountSettingsScreen extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Continue'),
+            child: const Text('Sign out'),
           ),
         ],
       ),
     );
     if (confirmed == true && context.mounted) {
-      showSettingsMessage(
-        context,
-        'Demo sign-out complete. No session changed.',
-      );
+      try {
+        // The app listens for sign-out and returns to the login screen.
+        await Backend.client?.auth.signOut();
+      } catch (error) {
+        if (context.mounted) {
+          showSettingsMessage(context, friendlyErrorMessage(error));
+        }
+      }
     }
   }
 
@@ -142,8 +147,8 @@ class AccountSettingsScreen extends StatelessWidget {
         ),
         title: const Text('Delete account?'),
         content: const Text(
-          'Account deletion cannot be undone. This demo will not delete your '
-          'account or remove any data.',
+          'This permanently deletes your account, habits, challenges, '
+          'groups you created and points. This cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -155,16 +160,26 @@ class AccountSettingsScreen extends StatelessWidget {
               backgroundColor: BehtarColors.primary,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Confirm demo action'),
+            child: const Text('Delete permanently'),
           ),
         ],
       ),
     );
     if (confirmed == true && context.mounted) {
-      showSettingsMessage(
-        context,
-        'Demo confirmation complete. No account or data was deleted.',
-      );
+      final client = Backend.client;
+      if (client == null) return;
+      try {
+        await client.rpc('delete_my_account');
+        // The account no longer exists on the server, so only clear the
+        // local session; the app then returns to the login screen.
+        try {
+          await client.auth.signOut(scope: SignOutScope.local);
+        } catch (_) {}
+      } catch (error) {
+        if (context.mounted) {
+          showSettingsMessage(context, friendlyErrorMessage(error));
+        }
+      }
     }
   }
 }

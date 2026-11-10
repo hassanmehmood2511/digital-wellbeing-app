@@ -1,3 +1,5 @@
+import '../../core/utils/date_formatters.dart';
+
 enum ChallengeVisibility { public, private }
 
 enum ChallengeScheduleStatus { upcoming, active, completed, ended }
@@ -42,7 +44,7 @@ class Challenge {
 
   ChallengeScheduleStatus statusAt(DateTime date) {
     if (isComplete) return ChallengeScheduleStatus.completed;
-    final today = DateTime(date.year, date.month, date.day);
+    final today = dateOnly(date);
     if (today.isBefore(startsOn)) return ChallengeScheduleStatus.upcoming;
     if (today.isAfter(endsOn)) return ChallengeScheduleStatus.ended;
     return ChallengeScheduleStatus.active;

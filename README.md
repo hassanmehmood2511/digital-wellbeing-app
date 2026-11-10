@@ -1,141 +1,81 @@
 # Behtar
 
-Behtar is a Flutter digital wellbeing app focused on building healthier daily
-habits through small, manageable steps. The current project is a frontend demo:
-challenge and settings data are mock/local state, with no backend or account
-service connected.
+Behtar is a Flutter digital wellbeing app that helps people build healthier daily
+habits and a calmer relationship with their phone — one small step at a time.
 
-## Feature status
+## Features
 
-The app includes screens for authentication and onboarding, a home dashboard,
-habits, challenges, groups, progress/rewards, profile and settings, and digital
-wellbeing. These are frontend/demo flows: data is local or in-memory, and no
-backend, account service, notification service, or device-usage integration is
-configured. See the relevant feature folders for implementation details.
+- **Accounts** — email sign up / login, Google sign-in, password reset by email,
+  "remember me", sign out and account deletion (Supabase Auth).
+- **Habits** — create habits with targets and priorities, daily check-offs,
+  streaks and points.
+- **7-day challenges** — public or private challenges, daily progress and a
+  completion bonus.
+- **Groups** — create a group, invite with a code, shared leaderboard.
+- **Progress & rewards** — points history and totals.
+- **Screen time (Android)** — real per-app usage from Android "Usage access",
+  daily limits, 7-day history, alerts at 80% / 100% of a limit.
+- **Notifications** — daily check-in, habit reminders, wellbeing tips and
+  screen-time alerts, plus an in-app notification inbox.
 
-## Technology
+## Tech stack
 
-- **Flutter** with **Dart** (`pubspec.yaml` requires Dart `^3.12.0`)
-- **Material 3** widgets and a shared theme in `lib/core/theme/app_theme.dart`
-- **google_fonts** for Poppins and Inter
-- **flutter_test** and **flutter_lints** for tests and static analysis
-- Android configuration uses Kotlin DSL, Java 17, Android Gradle Plugin 9.0.1,
-  and Kotlin 2.3.20.
+- Flutter / Dart (`pubspec.yaml` requires Dart `>=3.11.0`), Material 3
+- Supabase (`supabase_flutter`) for auth and data, with row-level security
+- `flutter_local_notifications` + `timezone` for reminders
+- Native Android (Kotlin) bridge for screen time in `MainActivity.kt`
+- `google_fonts` (Poppins), `shared_preferences`, `intl`
 
-Android and Web project scaffolding are present. There is no `ios/` project in
-this repository.
+## Getting started
+
+```bash
+flutter pub get
+flutter run            # Android phone or emulator (full feature set)
+flutter run -d chrome  # Web (no screen time or notifications)
+```
+
+Database setup (tables, security rules, functions) and Supabase dashboard
+settings are described in [SUPABASE_SETUP.md](SUPABASE_SETUP.md). Migrations live
+in `supabase/migrations` and are applied with:
+
+```bash
+npx supabase db push --remote
+```
 
 ## Project structure
 
 ```text
 lib/
-  main.dart
+  main.dart                      # App start-up, auth flow and routing
   core/
-  routing/                   # App navigation shell
-  theme/                     # Behtar theme and design tokens
-  widgets/                   # Shared bottom navigation
-features/
-  auth/
-    screens/                  # Sign-up, login, and password recovery
-    widgets/                  # Shared authentication UI
-  challenges/                 # Challenge model, controller, and screens
-  digital_wellbeing/
-    data/                     # App usage data source
-    models/                   # App usage model
-    screens/                  # Usage overview, limits, and app settings
-  groups/                     # Group models, controller, and screens
-  habits/
-    data/                     # Habit store and sample data
-    models/                   # Habit model
-    presentation/             # Habit screens and widgets
-  home/
-    models/                   # Dashboard preview data
-    widgets/                  # Reusable dashboard components
-  onboarding_screen/          # Onboarding screens and shared layout
-  rewards/                    # Progress and rewards
-  settings/                   # Profile, account, language, and notifications
-  splashscreen/
-test/
-  core/                       # Navigation widget tests
-  features/                   # Feature tests
-assets/
-  fonts/
-  icons/
-  images/          # Asset directories currently contain .gitkeep files
-android/           # Android host and Gradle configuration
-web/               # Flutter Web host files
+    backend/backend.dart         # Supabase client, error messages, ids
+    notifications/               # Local notifications + notification inbox
+    routing/                     # Bottom-navigation shell
+    theme/                       # Colours, spacing, typography, Material theme
+    utils/date_formatters.dart   # Shared date / duration helpers
+    widgets/                     # Shared widgets (progress bar, bottom nav)
+  features/
+    auth/                        # Login, sign up, forgot / reset password
+    onboarding_screen/           # First-launch onboarding
+    splashscreen/                # Animated splash
+    home/                        # Dashboard
+    habits/                      # Habit store, models and screens
+    challenges/                  # 7-day challenges
+    groups/                      # Groups and leaderboard
+    rewards/                     # Points and progress
+    digital_wellbeing/           # Screen time, limits, usage access
+    notifications/               # Notification inbox screen
+    settings/                    # Profile, settings, notification preferences
+supabase/migrations/             # Database schema and security
+test/                            # Unit and widget tests
 ```
 
-## Requirements
-
-- Flutter SDK with Dart `^3.12.0` support
-- Android Studio and an Android SDK/emulator for Android runs and builds
-- Chrome for the Web run command below
-
-Check the local toolchain before getting started:
+## Testing
 
 ```bash
-flutter --version
-flutter doctor
-```
-
-## Setup and run
-
-From the repository root:
-
-```bash
-flutter pub get
-flutter run
-```
-
-To run in Chrome:
-
-```bash
-flutter run -d chrome
-```
-
-## Configuration and integrations
-
-- No `.env` file, Dart environment defines, or app-specific environment
-  variables are used by the current source.
-- No API endpoints, HTTP client, Firebase setup, or backend service is
-  configured. Challenge and settings interactions use in-memory demo state;
-  state is not persisted across app restarts.
-- Android Gradle configuration reads the local Flutter SDK path from
-  `android/local.properties`, normally generated/configured by Flutter tooling.
-- The Android package ID is currently the template value
-  `com.example.digital_wellbeing_app`; update it before publishing.
-- Android release builds currently use the debug signing configuration. Set up
-  a proper release keystore before distributing a release build.
-
-## Development commands
-
-```bash
-dart format lib test
 flutter analyze
 flutter test
-flutter build apk --debug
-flutter build web
 ```
 
-`flutter run` and `flutter build` also accept the platform/device options
-supported by the installed Flutter SDK.
-
-## Contribution workflow
-
-The repository does not include a `CONTRIBUTING.md` or CI workflow. The
-following is a suggested checklist for changes:
-
-1. Create a focused branch from the current project branch.
-2. Keep feature changes within the relevant `lib/features/` area and reuse the
-   shared theme and widgets.
-3. Add or update tests under `test/` for changed behavior.
-4. Run `dart format lib test`, `flutter analyze`, and `flutter test`.
-5. Open a pull request with a concise summary and test results. The repository's
-   `.github/workflow/CODEOWNERS` lists `@JawadZafar1045` and
-   `@hassanmehmood2511` as code owners.
-
-## License
-
-No license file is currently present in the repository. Confirm the project's
-license before reusing or distributing its code.
+Widget tests run without Supabase: stores fall back to in-memory data when no
+backend is connected.

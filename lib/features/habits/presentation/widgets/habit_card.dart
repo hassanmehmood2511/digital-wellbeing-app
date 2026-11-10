@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../models/habit_model.dart';
 import '../../../../core/widgets/behtar_progress_bar.dart';
 
@@ -61,7 +61,7 @@ class HabitCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(habit.title, style: AppTextStyles.h3),
+                    Text(habit.title, style: AppTypography.h3),
 
                     const SizedBox(height: AppSpacing.xs),
 
@@ -69,7 +69,7 @@ class HabitCard extends StatelessWidget {
                       habit.description,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall,
+                      style: AppTypography.small,
                     ),
 
                     const SizedBox(height: AppSpacing.sm),
@@ -79,7 +79,7 @@ class HabitCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             '${habit.completedCount}/${habit.targetCount} today',
-                            style: AppTextStyles.label,
+                            style: AppTypography.small,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

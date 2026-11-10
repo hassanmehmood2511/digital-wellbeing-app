@@ -11,6 +11,9 @@ class HabitModel {
   final String icon;
   final String priority;
 
+  /// Last calendar day this habit reached its daily target (used for streaks).
+  final DateTime? lastCompletedOn;
+
   const HabitModel({
     required this.habitId,
     required this.ownerUid,
@@ -23,6 +26,7 @@ class HabitModel {
     required this.currentStreak,
     required this.icon,
     this.priority = 'Medium',
+    this.lastCompletedOn,
   });
 
   double get progress {
@@ -47,6 +51,7 @@ class HabitModel {
     int? currentStreak,
     String? icon,
     String? priority,
+    DateTime? lastCompletedOn,
   }) {
     return HabitModel(
       habitId: habitId ?? this.habitId,
@@ -60,6 +65,7 @@ class HabitModel {
       currentStreak: currentStreak ?? this.currentStreak,
       icon: icon ?? this.icon,
       priority: priority ?? this.priority,
+      lastCompletedOn: lastCompletedOn ?? this.lastCompletedOn,
     );
   }
 }

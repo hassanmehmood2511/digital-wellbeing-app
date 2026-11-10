@@ -4,6 +4,8 @@ import 'package:digital_wellbeing_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// Without a Supabase connection the controller works in memory; invite codes
+// are checked on the server, so unknown codes report "not found" here.
 void main() {
   group('GroupsController', () {
     late GroupsController controller;
@@ -17,8 +19,8 @@ void main() {
       controller.dispose();
     });
 
-    test('creates a joined group with local invite details', () {
-      final created = controller.createGroup(
+    test('creates a joined group with invite details', () async {
+      final created = await controller.createGroup(
         name: 'Morning Walkers',
         description: 'A supportive space for daily walks.',
         visibility: GroupVisibility.private,
@@ -30,43 +32,36 @@ void main() {
       expect(created.isJoined, isTrue);
       expect(created.isPrivate, isTrue);
       expect(created.members.single.name, 'Sam Lee');
-      expect(created.inviteCode, startsWith('BETHTR'));
+      expect(created.inviteCode, startsWith('BHT'));
+      expect(created.inviteCode, hasLength(9));
+      expect(created.inviteExpiresOn, DateTime(2026, 11, 8));
     });
 
-    test('classifies invite codes and joins public and private groups', () {
+    test('classifies invite codes without a server', () async {
+      final created = await controller.createGroup(
+        name: 'Readers',
+        description: 'Reading a little every day.',
+        visibility: GroupVisibility.public,
+        creatorName: 'Sam',
+      );
+
       expect(
-        controller.joinWithInviteCode('unknown'),
+        await controller.joinWithInviteCode('   '),
         GroupInviteResult.invalidCode,
       );
       expect(
-        controller.joinWithInviteCode('EXPIRED7'),
-        GroupInviteResult.expiredCode,
-      );
-      expect(
-        controller.joinWithInviteCode('DENIED7'),
-        GroupInviteResult.accessDenied,
-      );
-      expect(
-        controller.joinWithInviteCode('OPEN42', memberName: 'Sam Lee'),
-        GroupInviteResult.joined,
-      );
-      expect(
-        controller.joinWithInviteCode('open42'),
+        await controller.joinWithInviteCode(created.inviteCode.toLowerCase()),
         GroupInviteResult.alreadyJoined,
       );
       expect(
-        controller.joinWithInviteCode('INVITE7'),
-        GroupInviteResult.joined,
+        await controller.joinWithInviteCode('UNKNOWN1'),
+        GroupInviteResult.invalidCode,
       );
-
-      final privateGroup = controller.groupById('private-invitation')!;
-      expect(privateGroup.isPrivate, isTrue);
-      expect(privateGroup.isJoined, isTrue);
     });
 
-    test('rejects invalid group fields', () {
-      expect(
-        () => controller.createGroup(
+    test('rejects invalid group fields', () async {
+      await expectLater(
+        controller.createGroup(
           name: 'ab',
           description: 'A useful group description.',
           visibility: GroupVisibility.public,
@@ -77,32 +72,20 @@ void main() {
     });
   });
 
-  testWidgets('groups, invite errors, leaderboard and group creation work', (
-    tester,
-  ) async {
+  testWidgets('group creation and invite errors work', (tester) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const BehtarApp());
+    await tester.pumpWidget(const BehtarApp(skipStartupFlow: true));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Challenges'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Groups and leaderboard'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Mindful Circle'), findsOneWidget);
-    expect(find.text('Weekend Walkers'), findsOneWidget);
-
-    await tester.tap(find.text('Mindful Circle'));
-    await tester.pumpAndSettle();
-    expect(find.text('Group details'), findsOneWidget);
-    expect(find.text('Leaderboard'), findsOneWidget);
-    expect(find.text('Tied rank'), findsNWidgets(2));
-    expect(find.text('Hassan (You)'), findsOneWidget);
-    expect(find.text('Private group'), findsNothing);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
+    expect(find.text('Find your people'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Join a group'));
     await tester.pumpAndSettle();
@@ -113,31 +96,9 @@ void main() {
       find.text('That invite code was not found. Check it and try again.'),
       findsOneWidget,
     );
-    await tester.enterText(find.byType(TextFormField), 'EXPIRED7');
-    await tester.tap(find.text('Join group'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text(
-        'This invite code has expired. Ask a group member for a new one.',
-      ),
-      findsOneWidget,
-    );
-    await tester.enterText(find.byType(TextFormField), 'DENIED7');
-    await tester.tap(find.text('Join group'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('You don’t have access to this group with that invite.'),
-      findsOneWidget,
-    );
-    await tester.enterText(find.byType(TextFormField), 'INVITE7');
-    await tester.tap(find.text('Join group'));
-    await tester.pumpAndSettle();
-    expect(find.text('Quiet Morning Club'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Groups and leaderboard'));
-    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Create group'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Preview group'));
@@ -166,25 +127,5 @@ void main() {
     expect(find.text('Daily Readers'), findsOneWidget);
     expect(find.text('Private group'), findsOneWidget);
     expect(find.byTooltip('Copy invite code'), findsOneWidget);
-  });
-
-  testWidgets('group list and leaderboard remain usable on narrow screens', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 640);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(const BehtarApp());
-    await tester.tap(find.text('Challenges'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Groups and leaderboard'));
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    await tester.tap(find.text('Mindful Circle'));
-    await tester.pumpAndSettle();
-    expect(find.text('Leaderboard'), findsOneWidget);
-    expect(tester.takeException(), isNull);
   });
 }

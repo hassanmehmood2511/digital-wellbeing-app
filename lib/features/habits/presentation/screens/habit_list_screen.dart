@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../data/habit_store.dart';
 import '../../../rewards/reward_completion_service.dart';
 import '../widgets/habit_card.dart';
@@ -22,7 +22,7 @@ class HabitListScreen extends StatelessWidget {
         elevation: AppSpacing.elevationNone,
         titleSpacing: AppSpacing.base,
 
-        title: Text('My Habits', style: AppTextStyles.h1),
+        title: Text('My Habits', style: AppTypography.h1),
 
         actions: [
           Padding(
@@ -60,7 +60,7 @@ class HabitListScreen extends StatelessWidget {
           children: [
             Text(
               'Build better days, one habit at a time.',
-              style: AppTextStyles.bodySmall,
+              style: AppTypography.small,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -70,14 +70,43 @@ class HabitListScreen extends StatelessWidget {
                 listenable: HabitStore.instance,
 
                 builder: (context, child) {
-                  final habits = HabitStore.instance.habits;
+                  final store = HabitStore.instance;
+                  final habits = store.habits;
+
+                  if (habits.isEmpty && store.isLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    );
+                  }
+
+                  if (habits.isEmpty && store.loadError != null) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            store.loadError!,
+                            textAlign: TextAlign.center,
+                            style: AppTypography.body,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          TextButton(
+                            onPressed: store.load,
+                            child: const Text('Try again'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
                   if (habits.isEmpty) {
                     return Center(
                       child: Text(
                         'No habits yet.\nCreate your first habit!',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.body,
+                        style: AppTypography.body,
                       ),
                     );
                   }

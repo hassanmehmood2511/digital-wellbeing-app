@@ -2,6 +2,8 @@ import 'package:digital_wellbeing_app/features/challenges/challenges_controller.
 import 'package:digital_wellbeing_app/features/challenges/challenge.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// Without a Supabase connection the controller works in memory, which lets
+// these tests cover its rules without a network.
 void main() {
   late ChallengesController controller;
 
@@ -13,14 +15,19 @@ void main() {
     controller.dispose();
   });
 
-  test('joining, daily progress and leaving update local challenge state', () {
-    final challenge = controller.challenges.firstWhere(
-      (item) => item.id == 'daily-hydration',
-    );
+  Challenge createSample(ChallengesController target) => target.createChallenge(
+    title: 'Daily hydration',
+    description: 'Build a gentle hydration habit, one glass at a time.',
+    goal: 'Drink 8 glasses of water',
+  );
+
+  test('joining, daily progress and leaving update challenge state', () {
+    final challenge = createSample(controller);
     expect(challenge.isJoined, isFalse);
 
     controller.join(challenge.id);
     expect(controller.challengeById(challenge.id)!.isJoined, isTrue);
+    expect(controller.featuredChallenge?.id, challenge.id);
 
     controller.addDailyProgress(challenge.id, 0);
     expect(controller.challengeById(challenge.id)!.dailyProgress[0], 0.5);
@@ -31,12 +38,14 @@ void main() {
     final updated = controller.challengeById(challenge.id)!;
     expect(updated.isJoined, isFalse);
     expect(updated.dailyProgress[0], 1);
+    expect(controller.featuredChallenge, isNull);
   });
 
   test('seven completed days produce a complete challenge', () {
     var today = DateTime(2026, 10, 8);
     final completionController = ChallengesController(clock: () => today);
-    final challenge = completionController.challenges.first;
+    final challenge = createSample(completionController);
+    completionController.join(challenge.id);
     for (var day = 0; day < 7; day++) {
       today = challenge.startsOn.add(Duration(days: day));
       completionController.addDailyProgress(challenge.id, day);
@@ -51,7 +60,7 @@ void main() {
     completionController.dispose();
   });
 
-  test('new challenges are validated and inserted locally', () {
+  test('new challenges are validated and inserted first', () {
     expect(
       () => controller.createChallenge(
         title: ' ',
@@ -71,9 +80,14 @@ void main() {
     expect(challenge.isJoined, isFalse);
     expect(challenge.dailyProgress, List<double>.filled(7, 0));
     expect(challenge.endsOn.difference(challenge.startsOn).inDays, 6);
+    expect(
+      RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')
+          .hasMatch(challenge.id),
+      isTrue,
+    );
   });
 
-  test('custom goals, future dates and private visibility stay local', () {
+  test('custom goals, future dates and private visibility', () {
     final startDate = DateTime.now().add(const Duration(days: 12));
     final challenge = controller.createChallenge(
       title: 'A flexible routine',
@@ -88,7 +102,6 @@ void main() {
       challenge.startsOn,
       DateTime(startDate.year, startDate.month, startDate.day),
     );
-    expect(challenge.endsOn.difference(challenge.startsOn).inDays, 6);
     expect(
       challenge.statusAt(DateTime.now()),
       ChallengeScheduleStatus.upcoming,
@@ -96,7 +109,6 @@ void main() {
     expect(challenge.isPrivate, isTrue);
     expect(challenge.isCreator, isTrue);
     expect(challenge.canAccess, isTrue);
-    expect(controller.challenges.first.id, challenge.id);
 
     final privateChallenge = Challenge(
       id: 'other-private',

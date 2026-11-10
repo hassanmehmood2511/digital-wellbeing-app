@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'settings_controller.dart';
 import 'settings_widgets.dart';
+import '../../core/backend/backend.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
   const LanguageSettingsScreen({required this.controller, super.key});
@@ -77,7 +78,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
         const SizedBox(height: BehtarSpacing.sm),
         Center(
           child: Text(
-            'Your choice is saved locally for this demo.',
+            'Your choice is saved to your Behtar account.',
             style: Theme.of(context).textTheme.labelMedium,
             textAlign: TextAlign.center,
           ),
@@ -88,9 +89,18 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
 
   Future<void> _saveLanguage() async {
     setState(() => _isSaving = true);
-    await widget.controller.saveMockChanges();
-    if (!mounted) return;
+    final previous = widget.controller.selectedLanguage;
     widget.controller.updateLanguage(_selectedLanguage);
+    try {
+      await widget.controller.save();
+    } catch (error) {
+      widget.controller.updateLanguage(previous);
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      showSettingsMessage(context, friendlyErrorMessage(error));
+      return;
+    }
+    if (!mounted) return;
     setState(() => _isSaving = false);
     showSettingsMessage(context, 'Language preference saved.');
   }

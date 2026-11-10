@@ -4,6 +4,8 @@ import 'package:digital_wellbeing_app/core/theme/app_typography.dart';
 import 'package:digital_wellbeing_app/features/digital_wellbeing/data/app_data.dart';
 import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:digital_wellbeing_app/features/settings/settings_controller.dart';
+import 'package:digital_wellbeing_app/core/utils/date_formatters.dart';
 
 class UsageLimitsScreen extends StatefulWidget {
   const UsageLimitsScreen({super.key});
@@ -12,7 +14,13 @@ class UsageLimitsScreen extends StatefulWidget {
 }
 
 class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
-  bool _warningEnabled = true;
+  static const double _minLimit = 15;
+  static const double _maxLimit = 240;
+
+  /// Limits being dragged; saved once when the finger lifts.
+  final Map<String, int> _draftLimits = {};
+
+  SettingsController? get _settings => SettingsController.active;
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +51,14 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
                 'Warn me when I reach 80% of my daily limit',
                 style: AppTypography.body,
               ),
-              value: _warningEnabled,
-              activeThumbColor: AppColors.primary,
-              onChanged: (bool value) {
-                setState(() {
-                  _warningEnabled = value;
-                });
-              },
+              // Same setting as Profile › Settings › Gentle Reminders.
+              value: _settings?.gentleRemindersEnabled ?? true,
+              onChanged: _settings == null
+                  ? null
+                  : (bool value) {
+                      _settings!.updateGentleReminders(value);
+                      setState(() {});
+                    },
             ),
           ),
           const SizedBox(height: 24),
@@ -97,7 +106,7 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
                       ),
                     ),
                     Text(
-                      'Current Limit: ${_formatMinutes(app.dailyLimitMinutes)}',
+                      'Current Limit: ${formatMinutes(_draftLimits[app.appName] ?? app.dailyLimitMinutes)}',
                       style: AppTypography.small,
                     ),
                   ],
@@ -107,15 +116,23 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
           ),
           const SizedBox(height: 12),
           Slider(
-            value: app.dailyLimitMinutes.toDouble(),
-            min: 15,
-            max: 240,
+            value: (_draftLimits[app.appName] ?? app.dailyLimitMinutes)
+                .toDouble()
+                .clamp(_minLimit, _maxLimit),
+            min: _minLimit,
+            max: _maxLimit,
             divisions: 15,
+            label: formatMinutes(
+              _draftLimits[app.appName] ?? app.dailyLimitMinutes,
+            ),
             activeColor: AppColors.primary,
             inactiveColor: AppColors.border,
             onChanged: (double value) {
+              setState(() => _draftLimits[app.appName] = value.round());
+            },
+            onChangeEnd: (double value) {
               AppData().updateLimit(app.appName, value.round());
-              setState(() {});
+              setState(() => _draftLimits.remove(app.appName));
             },
           ),
         ],
@@ -162,11 +179,4 @@ class _UsageLimitsScreenState extends State<UsageLimitsScreen> {
     ); // Changed to FaIcon
   }
 
-  String _formatMinutes(int minutes) {
-    if (minutes < 60) return '${minutes}m';
-    int hours = minutes ~/ 60;
-    int remainingMinutes = minutes % 60;
-    if (remainingMinutes == 0) return '${hours}h';
-    return '${hours}h ${remainingMinutes}m';
-  }
 }

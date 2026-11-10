@@ -1,8 +1,7 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/backend/backend.dart';
 
 abstract final class RewardConfig {
   static const int habitCompletionPoints = 10;
@@ -54,17 +53,24 @@ class PointsStore extends ChangeNotifier {
   PointsStore._();
 
   static final PointsStore instance = PointsStore._();
-  static const _storageKey = 'behtar.reward_transactions.v1';
 
   final List<RewardTransaction> _transactions = [];
-  SharedPreferences? _preferences;
-  Future<void> _writeTail = Future<void>.value();
-  bool _isInitialized = false;
+
+  bool isLoading = false;
+  String? loadError;
 
   int get balance =>
       _transactions.fold(0, (total, transaction) => total + transaction.points);
 
   int get lifetimeEarned => balance;
+
+  /// Points earned since midnight (shown as "+N today" on Home).
+  int get earnedToday {
+    final today = dateOnly(DateTime.now());
+    return _transactions
+        .where((t) => !dateOnly(t.earnedAt).isBefore(today))
+        .fold(0, (total, t) => total + t.points);
+  }
 
   List<RewardTransaction> get transactions {
     final sorted = List<RewardTransaction>.of(_transactions)
@@ -72,81 +78,99 @@ class PointsStore extends ChangeNotifier {
     return List.unmodifiable(sorted);
   }
 
-  Future<void> initialize() async {
-    if (_isInitialized) return;
-    final preferences = await SharedPreferences.getInstance();
-    final encoded = preferences.getString(_storageKey);
-    if (encoded != null) {
-      final decoded = jsonDecode(encoded);
-      if (decoded is! List<dynamic>) {
-        throw const FormatException('Saved reward history is not a list.');
-      }
+  /// Kept for compatibility with app start-up; data now loads per user via
+  /// [load] after sign in.
+  Future<void> initialize() async {}
+
+  /// Loads the signed-in user's points history from Supabase.
+  Future<void> load() async {
+    final client = Backend.client;
+    final userId = Backend.userId;
+    if (client == null || userId == null) return;
+
+    isLoading = true;
+    loadError = null;
+    notifyListeners();
+    try {
+      final rows = await client
+          .from('reward_transactions')
+          .select()
+          .eq('user_id', userId)
+          .order('earned_at', ascending: false);
       _transactions
         ..clear()
-        ..addAll(
-          decoded.map((item) {
-            if (item is! Map<String, dynamic>) {
-              throw const FormatException(
-                'Saved reward history contains an invalid transaction.',
-              );
-            }
-            return RewardTransaction.fromJson(item);
-          }),
-        );
+        ..addAll(rows.map(_fromRow));
+    } catch (error) {
+      loadError = friendlyErrorMessage(error);
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-    _preferences = preferences;
-    _isInitialized = true;
   }
 
+  /// Clears everything (used on sign out).
+  void reset() {
+    _transactions.clear();
+    loadError = null;
+    notifyListeners();
+  }
+
+  /// Awards points once per [id]. Returns the points actually awarded
+  /// (0 when this reward was already given).
   Future<int> award({
     required String id,
     required String activityName,
     required int points,
     required RewardType type,
   }) async {
-    if (!_isInitialized) {
-      throw StateError('PointsStore must be initialized before awarding points.');
-    }
     if (id.trim().isEmpty || activityName.trim().isEmpty || points <= 0) {
       throw ArgumentError('A reward requires an id, activity name and points.');
     }
     if (_transactions.any((transaction) => transaction.id == id)) {
-      await _persist();
       return 0;
     }
 
-    _transactions.add(
-      RewardTransaction(
-        id: id,
-        activityName: activityName,
-        points: points,
-        type: type,
-        earnedAt: DateTime.now(),
-      ),
+    final transaction = RewardTransaction(
+      id: id,
+      activityName: activityName,
+      points: points,
+      type: type,
+      earnedAt: DateTime.now(),
     );
+
+    final client = Backend.client;
+    final userId = Backend.userId;
+    if (client != null && userId != null) {
+      try {
+        await client.from('reward_transactions').insert({
+          'user_id': userId,
+          'reward_key': id,
+          'activity_name': activityName,
+          'points': points,
+          'type': type.name,
+        });
+      } on PostgrestException catch (error) {
+        // 23505 = unique violation: this reward was already saved.
+        if (error.code == '23505') return 0;
+        rethrow;
+      }
+    }
+
+    _transactions.add(transaction);
     notifyListeners();
-    await _persist();
     return points;
   }
 
-  Future<void> _persist() {
-    final preferences = _preferences;
-    if (preferences == null) {
-      throw StateError('PointsStore has no initialized preferences.');
-    }
-    final snapshot = jsonEncode(
-      _transactions.map((transaction) => transaction.toJson()).toList(),
+  static RewardTransaction _fromRow(Map<String, dynamic> row) {
+    final typeName = row['type'] as String?;
+    return RewardTransaction(
+      id: row['reward_key'] as String,
+      activityName: row['activity_name'] as String,
+      points: (row['points'] as num).toInt(),
+      type: typeName == RewardType.challenge.name
+          ? RewardType.challenge
+          : RewardType.habit,
+      earnedAt: DateTime.parse(row['earned_at'] as String).toLocal(),
     );
-    final write = _writeTail.then((_) async {
-      final saved = await preferences.setString(_storageKey, snapshot);
-      if (!saved) {
-        throw StateError('Reward history could not be saved on this device.');
-      }
-    });
-    _writeTail = write.then<void>(
-      (_) {},
-      onError: (Object error, StackTrace stackTrace) {},
-    );
-    return write;
   }
 }

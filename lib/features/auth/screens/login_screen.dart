@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/auth_background_painter.dart';
+import '../../../core/backend/backend.dart';
+import '../widgets/auth_ui.dart';
 
 class LoginScreen extends StatefulWidget {
-  final VoidCallback? onLogin;
+  /// Signs the user in. Throw to show an error message on this screen.
+  final Future<void> Function(String email, String password, bool rememberMe)?
+  onLogin;
   final VoidCallback? onForgotPassword;
   final VoidCallback? onSignUp;
-  final VoidCallback? onGoogleSignIn;
+  final Future<void> Function()? onGoogleSignIn;
 
   const LoginScreen({
     super.key,
@@ -25,12 +29,10 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   static const Color primaryGreen = Color(0xFF10B982);
   static const Color secondaryGreen = Color(0xFF075B49);
-  static const Color sageGreen = Color(0xFF667873);
   static const Color background = Color(0xFFF4F8F7);
   static const Color primaryText = Color(0xFF172B27);
   static const Color secondaryText = Color(0xFF667873);
   static const Color borderColor = Color(0xFFDCE8E3);
-  static const Color logoGreen = Color(0xFF075B49);
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -125,15 +127,41 @@ class _LoginScreenState extends State<LoginScreen>
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (_isSubmitting) return;
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
-    if (widget.onLogin != null) {
-      setState(() => _isSubmitting = true);
-      widget.onLogin!();
-    } else {
-      _showMessage('Login UI is ready. Connect authentication to continue.');
+    final onLogin = widget.onLogin;
+    if (onLogin == null) {
+      _showMessage('Login is not available right now.');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await onLogin(
+        _emailController.text.trim().toLowerCase(),
+        _passwordController.text,
+        _rememberMe,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      _showMessage(friendlyErrorMessage(error));
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    final onGoogleSignIn = widget.onGoogleSignIn;
+    if (onGoogleSignIn == null) {
+      _showMessage('Google Sign-In is not available right now.');
+      return;
+    }
+    try {
+      await onGoogleSignIn();
+    } catch (error) {
+      if (mounted) _showMessage(friendlyErrorMessage(error));
     }
   }
 
@@ -192,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen>
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 // Behtar logo (same as splash screen).
-                                Center(child: _buildLogo(0.80 * scale)),
+                                Center(child: BehtarBlinkingLogo(blink: _blink, scale: 0.80 * scale)),
 
                                 SizedBox(height: 14 * scale),
 
@@ -236,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 SizedBox(height: 28 * scale),
 
                                 // Email
-                                _label('Email Address', scale),
+                                AuthFieldLabel('Email Address', scale: scale),
                                 SizedBox(height: 8 * scale),
                                 TextFormField(
                                   controller: _emailController,
@@ -272,7 +300,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 SizedBox(height: 18 * scale),
 
                                 // Password
-                                _label('Password', scale),
+                                AuthFieldLabel('Password', scale: scale),
                                 SizedBox(height: 8 * scale),
                                 TextFormField(
                                   controller: _passwordController,
@@ -453,11 +481,9 @@ class _LoginScreenState extends State<LoginScreen>
                                 SizedBox(
                                   height: 52 * scale,
                                   child: OutlinedButton(
-                                    onPressed:
-                                        widget.onGoogleSignIn ??
-                                        () => _showMessage(
-                                          'Google Sign-In is not connected yet.',
-                                        ),
+                                    onPressed: _isSubmitting
+                                        ? null
+                                        : _handleGoogleSignIn,
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: primaryText,
@@ -558,77 +584,6 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // Field label.
-  Widget _label(String text, double scale) {
-    return Text(
-      text,
-      style: GoogleFonts.poppins(
-        fontSize: 13 * scale,
-        fontWeight: FontWeight.w600,
-        color: primaryText,
-      ),
-    );
-  }
-
-  // Animated Behtar logo (same design as the splash screen).
-  Widget _buildLogo(double scale) {
-    Widget buildEye(double left) {
-      return Positioned(
-        left: left * scale,
-        top: 40 * scale,
-        child: AnimatedBuilder(
-          animation: _blink,
-          child: Container(
-            width: 16 * scale,
-            height: 16 * scale,
-            decoration: const BoxDecoration(
-              color: logoGreen,
-              shape: BoxShape.circle,
-            ),
-          ),
-          builder: (context, child) {
-            return Transform.scale(
-              alignment: Alignment.center,
-              scaleY: _blink.value,
-              child: child,
-            );
-          },
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: 92 * scale,
-      height: 147 * scale,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.65),
-          borderRadius: BorderRadius.circular(20 * scale),
-          border: Border.all(color: sageGreen.withValues(alpha: 0.55)),
-          boxShadow: [
-            BoxShadow(
-              color: primaryGreen.withValues(alpha: 0.07),
-              blurRadius: 24 * scale,
-              offset: Offset(0, 10 * scale),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20 * scale),
-                border: Border.all(color: logoGreen, width: 8 * scale),
-              ),
-            ),
-            buildEye(22),
-            buildEye(52),
-          ],
-        ),
       ),
     );
   }

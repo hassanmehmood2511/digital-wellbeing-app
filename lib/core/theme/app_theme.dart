@@ -4,40 +4,24 @@ import 'app_colors.dart';
 
 export 'app_colors.dart';
 
-
+/// Theme colour names, backed by [AppColors] so each value is defined once.
 abstract final class BehtarColors {
-  static const splashBackground = Color(0xFFF4F8F7);
-  static const splashPrimary = Color(0xFF10B982);
-  static const splashSecondary = Color(0xFF075B49);
-  static const splashLight = Color(0xFF10B982);
-  static const splashSage = Color(0xFF667873);
-  static const splashMint = Color(0xFFD0FAE4);
-  static const splashSurface = Color(0xFFFFFFFF);
-  static const splashText = Color(0xFF172B27);
-  static const splashSecondaryText = Color(0xFF667873);
-  static const splashBorder = Color(0xFFDCE8E3);
-
-  static const background = Color(0xFFF4F8F7);
-  // Primary Green Palette
-  static const Color primary = Color(0xFF10B982);
-  static const Color secondary = Color(0xFF075B49);
-  static const Color lightGreen = Color(0xFF10B982);
-  static const Color sage = Color(0xFF667873);
-  static const Color mint = Color(0xFFD0FAE4);
-
-  // Backgrounds & Surfaces
-  static const Color white = Color(0xFFFFFFFF);
-
-  // Text Colors
-  static const Color textPrimary = Color(0xFF172B27);
-  static const Color textSecondary = Color(0xFF667873);
-
-  // Borders & Dividers
-  static const Color border = Color(0xFFDCE8E3);
-
-  static const surface = Color(0xFFFFFFFF);
-  static const primaryText = Color(0xFF172B27);
-  static const secondaryText = Color(0xFF667873);
+  static const Color primary = AppColors.primary;
+  static const Color secondary = AppColors.secondary;
+  static const Color lightGreen = AppColors.lightGreen;
+  static const Color sage = AppColors.sage;
+  static const Color mint = AppColors.mint;
+  static const Color background = AppColors.background;
+  static const Color surface = AppColors.surface;
+  static const Color white = AppColors.white;
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
+  static const Color primaryText = AppColors.primaryText;
+  static const Color secondaryText = AppColors.secondaryText;
+  static const Color border = AppColors.border;
+  static const Color warning = AppColors.warning;
+  static const Color success = AppColors.success;
+  static const Color error = AppColors.error;
 }
 
 abstract final class BehtarSpacing {
@@ -212,13 +196,23 @@ abstract final class AppTheme {
         thickness: 1,
         space: 1,
       ),
+      // One switch style everywhere: white thumb, primary green when on.
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.all(BehtarColors.surface),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          return states.contains(WidgetState.selected)
-              ? BehtarColors.secondary
-              : BehtarColors.sage;
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.disabled)
+              ? BehtarColors.surface.withValues(alpha: 0.8)
+              : BehtarColors.surface;
         }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          final on = states.contains(WidgetState.selected);
+          if (states.contains(WidgetState.disabled)) {
+            return on
+                ? BehtarColors.primary.withValues(alpha: 0.35)
+                : BehtarColors.border;
+          }
+          return on ? BehtarColors.primary : BehtarColors.sage.withValues(alpha: 0.45);
+        }),
+        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(

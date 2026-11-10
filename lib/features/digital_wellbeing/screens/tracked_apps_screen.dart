@@ -43,12 +43,12 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
   }
 
   void _saveChanges() {
-    AppData().apps = _pendingApps.map((a) => AppUsage(
+    AppData().saveApps(_pendingApps.map((a) => AppUsage(
       appName: a.appName,
       usageMinutes: a.usageMinutes,
       dailyLimitMinutes: a.dailyLimitMinutes,
       isTracked: a.isTracked,
-    )).toList();
+    )).toList());
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -107,10 +107,10 @@ class _TrackedAppsScreenState extends State<TrackedAppsScreen> {
       canPop: !_hasUnsavedChanges,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+        // Grab the navigator before the dialog so no context is used later.
+        final navigator = Navigator.of(context);
         final shouldLeave = await _showUnsavedChangesDialog();
-        if (shouldLeave == true && mounted) {
-          Navigator.of(context).pop();
-        }
+        if (shouldLeave == true) navigator.pop();
       },
       child: Scaffold(
         backgroundColor: AppColors.background,

@@ -15,7 +15,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Today’s Progress'), findsOneWidget);
-    expect(find.text('Today’s Habits'), findsOneWidget);
+    expect(find.text('Add a habit'), findsOneWidget);
     expect(find.text('Points'), findsOneWidget);
     expect(find.text('App Usage'), findsOneWidget);
     expect(find.text('7-Day Challenge'), findsOneWidget);
@@ -28,7 +28,6 @@ void main() {
     await tester.tap(find.text('Challenges'));
     await tester.pumpAndSettle();
     expect(find.text('7-day challenges'), findsOneWidget);
-    expect(find.text('Mindful mornings'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Create challenge'));
     await tester.pumpAndSettle();
