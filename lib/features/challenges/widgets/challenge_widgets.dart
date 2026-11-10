@@ -4,6 +4,7 @@ import '../../settings/settings_widgets.dart';
 import '../challenge.dart';
 import '../../../core/utils/date_formatters.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/behtar_progress_bar.dart';
 
 class ChallengeCard extends StatelessWidget {
   const ChallengeCard({
@@ -300,14 +301,9 @@ class OverallProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(BehtarRadii.pill),
-      child: LinearProgressIndicator(
-        value: challenge.progress,
-        minHeight: 8,
-        backgroundColor: BehtarColors.border,
-        valueColor: const AlwaysStoppedAnimation<Color>(BehtarColors.secondary),
-      ),
+    return BehtarProgressBar(
+      value: challenge.progress,
+      semanticsLabel: 'Challenge progress',
     );
   }
 }

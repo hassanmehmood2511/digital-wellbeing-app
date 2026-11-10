@@ -8,6 +8,7 @@ import '../habits/data/habit_store.dart';
 import '../settings/settings_controller.dart';
 import 'models/dashboard_data.dart';
 import 'widgets/dashboard_widgets.dart';
+import '../../core/widgets/behtar_progress_bar.dart';
 
 /// Compile-time switch for the developer-only scenario preview menu.
 /// Enable with: --dart-define=dashboard_state_preview=true
@@ -599,12 +600,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             ],
           ),
           const SizedBox(height: BehtarSpacing.base),
-          LinearProgressIndicator(
+          BehtarProgressBar(
             value: challengeFraction,
-            minHeight: 10,
-            color: BehtarColors.secondary,
-            backgroundColor: BehtarColors.mint,
-            borderRadius: BorderRadius.circular(BehtarRadii.pill),
+            semanticsLabel: '7-day challenge progress',
           ),
           const SizedBox(height: BehtarSpacing.md),
           Row(

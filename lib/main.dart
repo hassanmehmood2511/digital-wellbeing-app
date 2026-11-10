@@ -63,12 +63,35 @@ class _BehtarAppState extends State<BehtarApp> {
     super.dispose();
   }
 
+  /// Called when the splash animation completes.
+  /// First launch -> onboarding, otherwise straight to login.
+  Future<void> _afterSplash() async {
+    if (_isCheckingOnboarding) return;
+    _isCheckingOnboarding = true;
+
+    bool alreadySeen = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      alreadySeen = prefs.getBool(_onboardingKey) ?? false;
+    } catch (_) {
+      alreadySeen = false;
+    }
+
+    _isCheckingOnboarding = false;
+
+    if (alreadySeen && !_alwaysShowOnboarding) {
+      _goToLogin();
+    } else {
+      _openOnboarding();
+    }
+  }
+
   void _goToLogin() {
     if (_hasStartedLogin) return;
     _hasStartedLogin = true;
 
-    _navigatorKey.currentState?.pushReplacement(
-      PageRouteBuilder(
+    _navigatorKey.currentState?.pushAndRemoveUntil<void>(
+      PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) =>
             LoginScreen(
@@ -81,6 +104,7 @@ class _BehtarAppState extends State<BehtarApp> {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
+      (_) => false,
     );
   }
 
@@ -133,27 +157,9 @@ class _BehtarAppState extends State<BehtarApp> {
     }
   }
 
-  Future<void> _afterAuthentication() async {
-    if (_hasEnteredDashboard || _isCheckingOnboarding) return;
-
-    _isCheckingOnboarding = true;
-
-    bool alreadySeen = false;
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      alreadySeen = prefs.getBool(_onboardingKey) ?? false;
-    } catch (_) {
-      alreadySeen = true;
-    }
-
-    _isCheckingOnboarding = false;
-
-    if (alreadySeen && !_alwaysShowOnboarding) {
-      _openDashboard();
-    } else {
-      _openOnboarding();
-    }
+  /// Called after a successful login or sign up.
+  void _afterAuthentication() {
+    _openDashboard();
   }
 
   void _openOnboarding() {
@@ -177,7 +183,7 @@ class _BehtarAppState extends State<BehtarApp> {
   }
 
   Future<void> _finishOnboarding() async {
-    if (_hasEnteredDashboard) return;
+    if (_hasStartedLogin) return;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -186,7 +192,7 @@ class _BehtarAppState extends State<BehtarApp> {
       // Onboarding can show again if local storage fails.
     }
 
-    _openDashboard();
+    _goToLogin();
   }
 
   void _openDashboard() {
@@ -220,10 +226,9 @@ class _BehtarAppState extends State<BehtarApp> {
       title: 'Behtar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: widget.home ??
-          AppNavigationShell(
-            settingsController: _settingsController,
-          ),
+      // App always starts on the splash screen:
+      // Splash -> Onboarding (first launch only) -> Login / Sign up -> Home.
+      home: widget.home ?? SplashScreen(onFinished: _afterSplash),
     );
   }
 }

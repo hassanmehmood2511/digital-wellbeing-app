@@ -6,7 +6,7 @@ void main() {
   testWidgets('profile changes are saved locally and appear on settings', (
     tester,
   ) async {
-    await tester.pumpWidget(const BehtarApp());
+    await tester.pumpWidget(const BehtarApp(skipStartupFlow: true));
 
     await tester.tap(find.text('Profile').last);
     await tester.pumpAndSettle();
@@ -32,7 +32,7 @@ void main() {
   testWidgets('profile settings button opens general app settings', (
     tester,
   ) async {
-    await tester.pumpWidget(const BehtarApp());
+    await tester.pumpWidget(const BehtarApp(skipStartupFlow: true));
 
     await tester.tap(find.text('Profile').last);
     await tester.pumpAndSettle();
@@ -72,7 +72,7 @@ void main() {
   testWidgets('account deletion requires explicit confirmation', (
     tester,
   ) async {
-    await tester.pumpWidget(const BehtarApp());
+    await tester.pumpWidget(const BehtarApp(skipStartupFlow: true));
 
     await tester.tap(find.text('Profile').last);
     await tester.pumpAndSettle();

@@ -6,6 +6,7 @@ import 'package:digital_wellbeing_app/features/digital_wellbeing/models/app_usag
 import 'app_usage_detail_screen.dart';
 import 'tracked_apps_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:digital_wellbeing_app/core/widgets/behtar_progress_bar.dart';
 
 class UsageOverviewScreen extends StatefulWidget {
   const UsageOverviewScreen({super.key});
@@ -98,7 +99,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
   Widget _buildLiveUsageBar(int totalUsage, int totalLimit, double percentage) {
     final Color barColor = percentage >= 1.0
         ? AppColors.error
-        : (percentage >= 0.8 ? AppColors.warning : AppColors.secondary);
+        : (percentage >= 0.8 ? AppColors.warning : AppColors.primary);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -139,14 +140,10 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: percentage.clamp(0.0, 1.0),
-              backgroundColor: AppColors.border,
-              valueColor: AlwaysStoppedAnimation<Color>(barColor),
-              minHeight: 12,
-            ),
+          BehtarProgressBar(
+            value: percentage,
+            color: barColor,
+            semanticsLabel: 'Total daily usage',
           ),
           const SizedBox(height: 8),
           Text(
@@ -222,7 +219,7 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
     final percentage = limitMinutes > 0 ? (usageMinutes / limitMinutes) : 0.0;
     final Color indicatorColor = percentage >= 1.0
         ? AppColors.error
-        : (percentage >= 0.8 ? AppColors.warning : AppColors.secondary);
+        : (percentage >= 0.8 ? AppColors.warning : AppColors.primary);
 
     final appData = AppUsage(
       appName: appName,
@@ -328,14 +325,10 @@ class _UsageOverviewScreenState extends State<UsageOverviewScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: percentage.clamp(0.0, 1.0),
-                      backgroundColor: AppColors.border,
-                      valueColor: AlwaysStoppedAnimation<Color>(indicatorColor),
-                      minHeight: 6,
-                    ),
+                  BehtarProgressBar(
+                    value: percentage,
+                    color: indicatorColor,
+                    semanticsLabel: '$appName usage',
                   ),
                   const SizedBox(height: 4),
                   Text(

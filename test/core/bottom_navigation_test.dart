@@ -11,7 +11,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const BehtarApp());
+    await tester.pumpWidget(const BehtarApp(skipStartupFlow: true));
     await tester.pumpAndSettle();
 
     expect(find.text('Today’s Progress'), findsOneWidget);

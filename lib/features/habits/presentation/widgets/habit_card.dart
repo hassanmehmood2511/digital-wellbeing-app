@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../models/habit_model.dart';
+import '../../../../core/widgets/behtar_progress_bar.dart';
 
 class HabitCard extends StatelessWidget {
   final HabitModel habit;
@@ -86,19 +87,7 @@ class HabitCard extends StatelessWidget {
                         const SizedBox(width: AppSpacing.sm),
 
                         Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.radiusSmall,
-                            ),
-                            child: LinearProgressIndicator(
-                              value: habit.progress,
-                              minHeight: 7,
-                              backgroundColor: AppColors.sage,
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                AppColors.primary,
-                              ),
-                            ),
-                          ),
+                          child: BehtarProgressBar(value: habit.progress),
                         ),
                       ],
                     ),

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import 'rewards_store.dart';
+import '../../core/widgets/behtar_progress_bar.dart';
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
@@ -423,15 +424,7 @@ class _MilestoneCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: BehtarSpacing.sm),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(BehtarRadii.pill),
-                    child: LinearProgressIndicator(
-                      value: progressFraction,
-                      minHeight: 10,
-                      color: BehtarColors.primary,
-                      backgroundColor: BehtarColors.mint,
-                    ),
-                  ),
+                  BehtarProgressBar(value: progressFraction),
                   const SizedBox(height: BehtarSpacing.xs),
                   Text(
                     unlocked
